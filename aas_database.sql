@@ -3,11 +3,11 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 15, 2024 at 10:32 AM
+-- Generation Time: May 15, 2024 at 02:00 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET SQL_MODE = "NO_AUTO_VALUE_ONQ_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
 
@@ -24,13 +24,25 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `attendance`
+--
+
+CREATE TABLE `attendance` (
+  `LessonId` int(11) NOT NULL,
+  `StudentId` int(11) NOT NULL,
+  `Time` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `device`
 --
 
 CREATE TABLE `device` (
   `MAC` varchar(12) NOT NULL,
   `Key` int(60) NOT NULL,
-  `Room` int(10) NOT NULL
+  `Room` varchar(10) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -64,8 +76,8 @@ CREATE TABLE `lesson` (
   `Id` int(11) NOT NULL,
   `SubjectID` int(11) NOT NULL,
   `Room` varchar(10) NOT NULL,
-  `StartTime` date NOT NULL,
-  `EndTime` date NOT NULL
+  `StartTime` datetime NOT NULL,
+  `EndTime` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -107,6 +119,18 @@ CREATE TABLE `subject-group-bridge` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `subject-lesson-group-bridge`
+--
+
+CREATE TABLE `subject-lesson-group-bridge` (
+  `GroupId` varchar(20) NOT NULL,
+  `Lessonid` int(11) NOT NULL,
+  `Subjectid` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `teacher`
 --
 
@@ -124,10 +148,18 @@ CREATE TABLE `teacher` (
 --
 
 --
+-- Indexes for table `attendance`
+--
+ALTER TABLE `attendance`
+  ADD PRIMARY KEY (`LessonId`,`StudentId`),
+  ADD KEY `fk_student_id` (`StudentId`);
+
+--
 -- Indexes for table `device`
 --
 ALTER TABLE `device`
-  ADD PRIMARY KEY (`MAC`);
+  ADD PRIMARY KEY (`MAC`),
+  ADD UNIQUE KEY `Room` (`Room`);
 
 --
 -- Indexes for table `group`
@@ -146,7 +178,9 @@ ALTER TABLE `group assign`
 -- Indexes for table `lesson`
 --
 ALTER TABLE `lesson`
-  ADD PRIMARY KEY (`Id`);
+  ADD PRIMARY KEY (`Id`),
+  ADD KEY `SubjectID` (`SubjectID`),
+  ADD KEY `Room` (`Room`);
 
 --
 -- Indexes for table `student`
@@ -170,6 +204,14 @@ ALTER TABLE `subject-group-bridge`
   ADD KEY `Subjectid` (`Subjectid`);
 
 --
+-- Indexes for table `subject-lesson-group-bridge`
+--
+ALTER TABLE `subject-lesson-group-bridge`
+  ADD PRIMARY KEY (`GroupId`,`Lessonid`,`Subjectid`),
+  ADD KEY `Lessonid` (`Lessonid`),
+  ADD KEY `Subjectid` (`Subjectid`);
+
+--
 -- Indexes for table `teacher`
 --
 ALTER TABLE `teacher`
@@ -178,12 +220,6 @@ ALTER TABLE `teacher`
 --
 -- AUTO_INCREMENT for dumped tables
 --
-
---
--- AUTO_INCREMENT for table `lesson`
---
-ALTER TABLE `lesson`
-  MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `student`
@@ -214,11 +250,31 @@ ALTER TABLE `teacher`
 --
 
 --
+-- Constraints for table `attendance`
+--
+ALTER TABLE `attendance`
+  ADD CONSTRAINT `attendance_ibfk_1` FOREIGN KEY (`LessonId`) REFERENCES `lesson` (`Id`),
+  ADD CONSTRAINT `attendance_ibfk_2` FOREIGN KEY (`StudentId`) REFERENCES `student` (`Id`),
+  ADD CONSTRAINT `attendance_ibfk_3` FOREIGN KEY (`LessonId`) REFERENCES `lesson` (`Id`),
+  ADD CONSTRAINT `attendance_ibfk_4` FOREIGN KEY (`StudentId`) REFERENCES `student` (`Id`),
+  ADD CONSTRAINT `attendance_ibfk_5` FOREIGN KEY (`LessonId`) REFERENCES `lesson` (`Id`),
+  ADD CONSTRAINT `attendance_ibfk_6` FOREIGN KEY (`StudentId`) REFERENCES `student` (`Id`),
+  ADD CONSTRAINT `fk_lesson_id` FOREIGN KEY (`LessonId`) REFERENCES `lesson` (`Id`),
+  ADD CONSTRAINT `fk_student_id` FOREIGN KEY (`StudentId`) REFERENCES `student` (`Id`);
+
+--
 -- Constraints for table `group assign`
 --
 ALTER TABLE `group assign`
   ADD CONSTRAINT `group assign_ibfk_1` FOREIGN KEY (`GroupID`) REFERENCES `group` (`Id`),
   ADD CONSTRAINT `group assign_ibfk_2` FOREIGN KEY (`StudentID`) REFERENCES `student` (`Id`);
+
+--
+-- Constraints for table `lesson`
+--
+ALTER TABLE `lesson`
+  ADD CONSTRAINT `lesson_ibfk_1` FOREIGN KEY (`SubjectID`) REFERENCES `subject` (`id`),
+  ADD CONSTRAINT `lesson_ibfk_2` FOREIGN KEY (`Room`) REFERENCES `device` (`Room`);
 
 --
 -- Constraints for table `subject`
@@ -232,6 +288,14 @@ ALTER TABLE `subject`
 ALTER TABLE `subject-group-bridge`
   ADD CONSTRAINT `subject-group-bridge_ibfk_1` FOREIGN KEY (`GroupID`) REFERENCES `group` (`Id`),
   ADD CONSTRAINT `subject-group-bridge_ibfk_2` FOREIGN KEY (`Subjectid`) REFERENCES `subject` (`id`);
+
+--
+-- Constraints for table `subject-lesson-group-bridge`
+--
+ALTER TABLE `subject-lesson-group-bridge`
+  ADD CONSTRAINT `subject-lesson-group-bridge_ibfk_1` FOREIGN KEY (`GroupId`) REFERENCES `group` (`Id`),
+  ADD CONSTRAINT `subject-lesson-group-bridge_ibfk_2` FOREIGN KEY (`Lessonid`) REFERENCES `lesson` (`Id`),
+  ADD CONSTRAINT `subject-lesson-group-bridge_ibfk_3` FOREIGN KEY (`Subjectid`) REFERENCES `subject` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
