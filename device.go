@@ -6,12 +6,14 @@ import (
 )
 
 type Device struct {
-	Id string `json:"id"`
+	Mac  string `json:"id"`
+	Key  string `json:"key"`
+	Room string `json:"room"`
 	//CurrentLesson Lesson `json:"current_lesson"`
 }
 
 func (device *Device) getDevice(db *sql.DB) error {
-	return errors.New("Not implemented")
+	return db.QueryRow("select Key, Room from users where Mac = ? LIMIT 1", device.Mac).Scan(&device.Key, &device.Room)
 }
 
 func (device *Device) updateDevice(db *sql.DB) error {
