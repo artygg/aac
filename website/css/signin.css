@@ -1,6 +1,7 @@
 * {
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
 }
 
 .header {
@@ -89,6 +90,9 @@
     justify-content: center;
     padding: 2rem;
     gap: 1rem;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
 }
 
 
