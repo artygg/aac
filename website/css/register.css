@@ -22,7 +22,34 @@
     padding-top: 1rem;
 }
 
-.header-image img{
+.header-image img {
     max-width: 8vw;
     max-height: 15vh;
+}
+
+.header-tab {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
+.header-tab-item {
+    display: flex;
+    padding: 1rem;
+    gap: 1rem;
+    border: #000000 0.1rem solid;
+}
+
+.header-tab img {
+    max-width: 4vw;
+    max-height: 8vh;
+}
+
+.header-tab-text {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+}
+
+.header-tab-text h3 {
+    flex-grow: 1;
 }
