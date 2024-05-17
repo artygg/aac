@@ -1,0 +1,28 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.body {
+    color: aqua;
+}
+
+.header {
+    display: flex;
+    justify-content: start;
+    padding: 1rem;
+}
+
+.header-text {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+    flex-grow: 1;
+    padding-top: 1rem;
+}
+
+.header-image img{
+    max-width: 8vw;
+    max-height: 15vh;
+}
