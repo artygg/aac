@@ -23,13 +23,13 @@
 }
 
 .header-image img {
-    max-width: 8vw;
-    max-height: 15vh;
+    max-width: 7vw;
 }
 
 .header-tab {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
+    margin: 0.5rem;
 }
 
 .header-tab-item {
@@ -41,7 +41,7 @@
 
 .header-tab img {
     max-width: 4vw;
-    max-height: 8vh;
+    max-height: 6vh;
 }
 
 .header-tab-text {
@@ -52,6 +52,35 @@
 
 .header-tab-text h3 {
     flex-grow: 1;
+}
+
+.main-container {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+}
+
+.main-form {
+    display: flex;
+    padding: 0.5rem;
+    flex-direction: column;
+}
+
+.main-form-item {
+    display: flex;
+    flex-direction: column;
+    padding-top: 1rem;
+}
+
+.main-form-item h3{
+    padding-bottom: 0.4rem;
+}
+
+.main-form-item input {
+    padding: 0.5rem;
+}
+
+.main-form-item p{
+    padding-top: 0.2rem;
 }
 
 .footer {
