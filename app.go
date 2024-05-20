@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
@@ -36,33 +37,54 @@ func (a *App) Run(addr string) {
 }
 
 func (a *App) initializeRoutes() {
-	//a.Router.HandleFunc("/api/device/student", a.compareFace).Methods("PUT")
+	a.Router.HandleFunc("/api/device/student", a.compareFace).Methods("POST")
 	//a.Router.HandleFunc("/products", a.).Methods("GET")
 	//a.Router.HandleFunc("/product", a.createProduct).Methods("POST")
 	a.Router.HandleFunc("/product", a.getUser).Methods("GET")
+	a.Router.HandleFunc("/sofronie", a.getSofronie).Methods("GET")
 	//a.Router.HandleFunc("/product/{id:[0-9]+}", a.updateProduct).Methods("PUT")
 	//a.Router.HandleFunc("/product/{id:[0-9]+}", a.deleteProduct).Methods("DELETE")
 }
-
-func (a *App) compareFace(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	mac := vars["mac"]
-	key := vars["key"]
-	if mac == "" {
-		w.WriteHeader(http.StatusNotFound)
+func (a *App) getSofronie(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusAccepted)
+	w.Header().Set("Content-Type", "text/html")
+	_, err := w.Write([]byte("<h1>Sofronie LOH</h1>"))
+	if err != nil {
+		log.Fatal("error writing response")
 		return
 	}
-	device := Device{Mac: mac}
+}
+
+func (a *App) compareFace(w http.ResponseWriter, r *http.Request) {
+	device := Device{}
+	err := json.NewDecoder(r.Body).Decode(&device)
+	log.Println(device)
+	key := device.Key
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if device.Mac == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	if device.Key == "" {
+		w.WriteHeader(http.StatusNetworkAuthenticationRequired)
+		return
+	}
 	if err := device.getDevice(a.DB); err != nil {
 		switch err {
 		case sql.ErrNoRows:
 			w.WriteHeader(http.StatusNotFound)
 		default:
+
+			log.Fatalln(err)
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 		return
 	}
-
+	log.Println(key)
+	log.Println(device.Key)
 	if key == device.Key {
 		w.WriteHeader(http.StatusAccepted)
 		w.Header().Set("Content-Type", "text/html")
@@ -71,6 +93,8 @@ func (a *App) compareFace(w http.ResponseWriter, r *http.Request) {
 			log.Fatal("error writing response")
 			return
 		}
+	} else {
+		w.WriteHeader(http.StatusUnauthorized)
 	}
 }
 
