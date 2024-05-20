@@ -52,11 +52,15 @@
 
 .header-tab-text h3 {
     flex-grow: 1;
+    text-decoration: underline;
+}
+
+.header-tab-text p{
 }
 
 .main-container {
     display: grid;
-    grid-template-columns: 3fr 2fr;
+    grid-template-columns: 50% 50%;
 }
 
 .main-form {
@@ -76,12 +80,33 @@
 }
 
 .main-form-item input {
-    padding: 0.5rem;
+    padding: 0.3rem;
 }
 
 .main-form-item p{
     padding-top: 0.2rem;
 }
+
+.main-form-create {
+    margin-top: 2rem;
+    margin-right: 50%;
+    padding: 0.5rem;
+    grid-column: 1/2;
+}
+
+.test {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: #003787 0.1rem solid;
+    border-radius: 0.5rem;
+    background-color: #003787;
+    color: white;
+    padding: 0.3rem;
+    margin-top: 1rem;
+    margin-right: 50%;
+}
+
 
 .footer {
     display: flex;
