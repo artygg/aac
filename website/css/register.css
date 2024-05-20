@@ -53,3 +53,13 @@
 .header-tab-text h3 {
     flex-grow: 1;
 }
+
+.footer {
+    display: flex;
+    justify-content: center;
+    padding: 2rem;
+    gap: 1rem;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+}
