@@ -1,0 +1,45 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+}
+
+header img {
+    display: block;
+    max-width: 7vw;
+    width: auto;
+}
+
+header .dots {
+    width: 3vw;
+    height: 3vw;
+    margin-right: 5rem;
+}
+
+.back-arrow-dots {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+}
+
+.back-arrow {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+
+.arrow {
+    width: 1.5vw;
+    height: 1vw;
+    transform: rotate(180deg);
+}

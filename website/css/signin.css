@@ -11,8 +11,9 @@
 }
 
 .header img{
-    width: 10vw;
-    height: 17vh;
+    display: block;
+    max-width: 7vw;
+    width: auto;
 }
 
 .container {

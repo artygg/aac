@@ -23,7 +23,9 @@
 }
 
 .header-image img {
+    display: block;
     max-width: 7vw;
+    width: auto;
 }
 
 .header-tab {
