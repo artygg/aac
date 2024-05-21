@@ -1,0 +1,93 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+}
+
+header img {
+    width: 10vw;
+    height: 17vh;
+}
+
+header .dots {
+    width: 3vw;
+    height: 3vw;
+}
+
+.container-footer {
+    grid-column: 2/3;
+    grid-row: 3/4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    border: #5076AD80 0.1rem solid;
+    border-radius: 0.5rem;
+    background-color: #00378705;
+    padding: 0.5rem;
+    margin-top: 2rem;
+}
+
+.container-footer a {
+    text-decoration: none;
+    color: #5076AD;
+}
+
+footer {
+    display: flex;
+    justify-content: center;
+    padding: 2rem;
+    gap: 1rem;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+}
+
+.main-part {
+
+}
+
+.left-side{
+    display: flex;
+    width: 16%;
+    justify-content: space-between;
+    align-items: center;
+
+}
+
+.left-side a{
+    align-self: end;
+}
+
+.heading{
+    display: flex;
+    justify-content: center;
+    align-content: center;
+}
+.heading h1{
+    font-weight: normal;
+    color: darkblue;
+}
+
+.mark-as-ended{
+    display: flex;
+    flex-direction: row-reverse;
+    font-style: italic;
+    text-decoration: underline;
+    margin: 2rem;
+    color: gray;
+}
+
+.navigation{
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    width: 80%;
+}
