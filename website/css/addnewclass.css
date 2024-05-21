@@ -1,0 +1,16 @@
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+}
+
+header img {
+    width: 10vw;
+    height: 17vh;
+}
+
+header .dots {
+    width: 3vw;
+    height: 3vw;
+}
