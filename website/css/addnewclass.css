@@ -12,13 +12,15 @@ header {
 }
 
 header img {
-    width: 10vw;
-    height: 17vh;
+    display: block;
+    max-width: 7vw;
+    width: auto;
 }
 
 header .dots {
     width: 3vw;
     height: 3vw;
+    margin-right: 5rem;
 }
 
 .back-arrow-dots {
@@ -34,6 +36,7 @@ header .dots {
     align-items: center;
     gap: 0.5rem;
 }
+
 
 .arrow {
     width: 1.5vw;
