@@ -37,9 +37,66 @@ header .dots {
     gap: 0.5rem;
 }
 
-
 .arrow {
     width: 1.5vw;
     height: 1vw;
     transform: rotate(180deg);
+}
+
+.main-header {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding:1rem;
+    gap: 1rem;
+}
+
+.main-header img {
+    display: block;
+    max-width: 3vw;
+    width: auto;
+}
+
+.main-container {
+    display: flex;
+    flex-direction: column;
+    padding: 2rem;
+    gap: 1rem;
+}
+
+.main-container-item {
+    padding-top: 1rem;
+}
+
+.main-container-subitem {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    padding-top: 0.5rem;
+}
+
+.main-container-button {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding-top: 1rem;
+}
+
+.start-button {
+    border: #003787 0.1rem solid;
+    border-radius: 0.5rem;
+    background-color: #003787;
+    color: white;
+    padding: 0.5rem;
+}
+
+.footer {
+    display: flex;
+    justify-content: center;
+    padding: 2rem;
+    gap: 1rem;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
 }
