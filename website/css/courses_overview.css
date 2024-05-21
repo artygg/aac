@@ -55,7 +55,7 @@ footer {
 
 }
 
-.left-side{
+.left-side {
     display: flex;
     width: 16%;
     justify-content: space-between;
@@ -63,21 +63,22 @@ footer {
 
 }
 
-.left-side a{
+.left-side a {
     align-self: end;
 }
 
-.heading{
+.heading {
     display: flex;
     justify-content: center;
     align-content: center;
 }
-.heading h1{
+
+.heading h1 {
     font-weight: normal;
     color: darkblue;
 }
 
-.mark-as-ended{
+.mark-as-ended {
     display: flex;
     flex-direction: row-reverse;
     font-style: italic;
@@ -86,9 +87,81 @@ footer {
     color: gray;
 }
 
-.navigation{
+.navigation {
     display: flex;
     justify-content: center;
     align-content: center;
-    width: 80%;
+    align-items: center;
+}
+
+.test {
+    display: flex;
+    align-items: center;
+    border: blue 0.1rem solid;
+    padding: 1rem 12rem;
+    gap: 1rem;
+}
+
+.navigation a {
+    text-decoration: none;
+    align-items: center;
+}
+
+.navigation img {
+    height: 5vh;
+    width: 5vh;
+    text-align: center;
+
+}
+
+.heading-two {
+    display: flex;
+    justify-content: space-between;
+    margin-inline: 3rem;
+    margin-top: 3rem;
+    margin-bottom: 1rem;
+    color: #000000A8;
+}
+
+.heading-two a{
+    color: #000000A8;
+}
+
+.course-container{
+    display: flex;
+    align-content: center;
+    justify-content: center;
+    margin-top: 5rem;
+}
+
+.course{
+    display: flex;
+    align-content: center;
+    justify-content: center;
+    border: grey 0.1rem solid;
+    height: 5vw;
+}
+
+.course .orange{
+    background-color: #C56106;
+    width: 3vw;
+}
+
+.course .name-of-the-course{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 70vw;
+}
+
+.course h2{
+    font-weight: normal;
+}
+
+.course .dropdown{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 10vw;
+    border-left: grey 0.1rem solid;
 }
