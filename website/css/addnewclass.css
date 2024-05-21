@@ -1,3 +1,9 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 header {
     display: flex;
     justify-content: space-between;
@@ -13,4 +19,24 @@ header img {
 header .dots {
     width: 3vw;
     height: 3vw;
+}
+
+.back-arrow-dots {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+}
+
+.back-arrow {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.arrow {
+    width: 1.5vw;
+    height: 1vw;
+    transform: rotate(180deg);
 }
