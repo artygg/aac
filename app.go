@@ -60,7 +60,7 @@ func (a *App) initializeRoutes() {
 	//a.Router.HandleFunc("/products", a.).Methods("GET")
 	//a.Router.HandleFunc("/product", a.createProduct).Methods("POST")
 	//a.Router.HandleFunc("/product", a.getUser).Methods("GET")
-	a.Router.Handle("/api/web/courses", a.userAuthMiddleware(http.HandlerFunc(a.getCourses))).Methods("GET")
+	//a.Router.Handle("/api/web/courses", a.userAuthMiddleware(http.HandlerFunc(a.getCourses))).Methods("GET")
 	//a.Router.HandleFunc("/product/{id:[0-9]+}", a.updateProduct).Methods("PUT")
 	//a.Router.HandleFunc("/product/{id:[0-9]+}", a.deleteProduct).Methods("DELETE")
 }
@@ -106,6 +106,51 @@ func (a *App) userAuthMiddleware(next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(w, r)
 	})
+}
+func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
+	login := r.FormValue("login")
+	password := r.FormValue("password")
+
+	if login == "" || password == "" {
+		http.Error(w, "Login and password are required", http.StatusBadRequest)
+		return
+	}
+
+	user := Teacher{Login: login}
+	if err := user.getUser(a.DB); err != nil {
+		switch err {
+		case sql.ErrNoRows:
+			http.Error(w, "Invalid login", http.StatusUnauthorized)
+		default:
+			log.Println(err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	if user.Password != password {
+		http.Error(w, "Invalid password", http.StatusUnauthorized)
+		return
+	}
+
+	// Create a session
+	session, _ := store.Get(r, "session-name")
+	session.Values["authenticated"] = true
+	session.Values["user"] = user.Login
+	session.Values["userID"] = user.ID
+	session.Save(r, w)
+
+	http.Redirect(w, r, "/protected", http.StatusFound)
+}
+
+func (a *App) logoutHandler(w http.ResponseWriter, r *http.Request) {
+	session, _ := store.Get(r, "session-name")
+	session.Values["authenticated"] = false
+	delete(session.Values, "user")
+	delete(session.Values, "userID")
+	session.Save(r, w)
+
+	http.Redirect(w, r, "/", http.StatusFound)
 }
 func (a *App) checkDevice(w http.ResponseWriter, r *http.Request) {
 	device, ok := r.Context().Value("device").(Device)
@@ -156,9 +201,4 @@ func (a *App) compareFace(w http.ResponseWriter, r *http.Request) {
 	} else {
 		w.WriteHeader(http.StatusUnauthorized)
 	}
-}
-
-func (a *App) getCourses(w http.ResponseWriter, r *http.Request) {
-	courses := []Course{}
-	teacher.getCourse(a.DB)
 }
