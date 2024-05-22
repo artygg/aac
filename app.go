@@ -1,19 +1,22 @@
 package main
 
 import (
+	"context"
+	"crypto/rand"
 	"database/sql"
 	"encoding/json"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/sessions"
 	"log"
 	"net/http"
-	"strconv"
 )
 
 type App struct {
 	Router *mux.Router
 	DB     *sql.DB
+	Store  *sessions.CookieStore
 }
 
 func (a *App) Initialize() {
@@ -29,6 +32,21 @@ func (a *App) Initialize() {
 	a.DB.SetMaxIdleConns(10)
 
 	a.Router = mux.NewRouter()
+
+	err = a.generateKey()
+	if err != nil {
+		a.Store = sessions.NewCookieStore([]byte("Stan0dard0101Coo6kie0101Sto7reByAAS"))
+	}
+}
+
+func (a *App) generateKey() error {
+	key := make([]byte, 32)
+	_, err := rand.Read(key)
+	if err != nil {
+		return err
+	}
+	a.Store = sessions.NewCookieStore(key)
+	return nil
 }
 
 func (a *App) Run(addr string) {
@@ -37,24 +55,66 @@ func (a *App) Run(addr string) {
 }
 
 func (a *App) initializeRoutes() {
-	a.Router.HandleFunc("/api/device/student", a.compareFace).Methods("POST")
+	a.Router.Handle("/api/device/check", a.deviceAuthMiddleware(http.HandlerFunc(a.checkDevice))).Methods("GET")
+
 	//a.Router.HandleFunc("/products", a.).Methods("GET")
 	//a.Router.HandleFunc("/product", a.createProduct).Methods("POST")
-	a.Router.HandleFunc("/product", a.getUser).Methods("GET")
-	a.Router.HandleFunc("/sofronie", a.getSofronie).Methods("GET")
+	//a.Router.HandleFunc("/product", a.getUser).Methods("GET")
+	a.Router.Handle("/api/web/courses", a.userAuthMiddleware(http.HandlerFunc(a.getCourses))).Methods("GET")
 	//a.Router.HandleFunc("/product/{id:[0-9]+}", a.updateProduct).Methods("PUT")
 	//a.Router.HandleFunc("/product/{id:[0-9]+}", a.deleteProduct).Methods("DELETE")
 }
-func (a *App) getSofronie(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusAccepted)
-	w.Header().Set("Content-Type", "text/html")
-	_, err := w.Write([]byte("<h1>Sofronie LOH</h1>"))
-	if err != nil {
-		log.Fatal("error writing response")
+func (a *App) deviceAuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		device := Device{}
+		device.Mac = r.Header.Get("X-MAC-ADDRESS")
+		key := r.Header.Get("X-API-KEY")
+
+		if key == "" {
+			http.Error(w, "API key is missing", http.StatusUnauthorized)
+			return
+		}
+
+		if err := device.getDevice(a.DB); err != nil {
+			switch err {
+			case sql.ErrNoRows:
+				http.Error(w, "Device wasn't found", http.StatusNotFound)
+			default:
+				log.Fatalln(err)
+				w.WriteHeader(http.StatusInternalServerError)
+			}
+			return
+		}
+
+		if device.Key != key {
+			http.Error(w, "Invalid API key", http.StatusUnauthorized)
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), "device", device)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+func (a *App) userAuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		session, _ := a.Store.Get(r, "aas-user")
+		authenticated, ok := session.Values["authenticated"].(bool)
+
+		if !ok || !authenticated {
+			http.Error(w, "Forbidden", http.StatusForbidden)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+func (a *App) checkDevice(w http.ResponseWriter, r *http.Request) {
+	device, ok := r.Context().Value("device").(Device)
+	if !ok {
+		http.Error(w, "Device information not found", http.StatusInternalServerError)
 		return
 	}
+	fmt.Fprintf(w, "Device MAC: %s, Device Key: %s, Room: %s", device.Mac, device.Key, device.Room)
 }
-
 func (a *App) compareFace(w http.ResponseWriter, r *http.Request) {
 	device := Device{}
 	err := json.NewDecoder(r.Body).Decode(&device)
@@ -98,52 +158,7 @@ func (a *App) compareFace(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (a *App) getUser(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	var (
-		id   int
-		name string
-	)
-	id, _ = strconv.Atoi(vars["id"])
-	rows, err := a.DB.Query("select id, name from users where id = ?", 1)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer rows.Close()
-	for rows.Next() {
-		err := rows.Scan(&id, &name)
-		if err != nil {
-			log.Fatal(err)
-		}
-		log.Println(id, name)
-	}
-	err = rows.Err()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	_, err = w.Write([]byte(fmt.Sprintf("ID: %d, Name: %s\n", id, name)))
-	if err != nil {
-		return
-	}
+func (a *App) getCourses(w http.ResponseWriter, r *http.Request) {
+	courses := []Course{}
+	teacher.getCourse(a.DB)
 }
-
-//func (a *App) compareFace(w http.ResponseWriter, r *http.Request) {
-//	t := time.Now()
-//
-//	file, handler, err := r.FormFile("image")
-//	fileName := r.FormValue("file_name")
-//	if err != nil {
-//		panic(err)
-//	}
-//	defer file.Close()
-//
-//	f, err := os.OpenFile(handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
-//	if err != nil {
-//		panic(err)
-//	}
-//	defer f.Close()
-//	_, _ = io.WriteString(w, "File "+fileName+" Uploaded successfully")
-//	_, _ = io.Copy(f, file)
-//
-//}
