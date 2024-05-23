@@ -85,25 +85,30 @@ footer {
     display: flex;
     align-content: center;
     justify-content: center;
-    margin-top: 5vh;
+
+    margin-top: 1.5rem;
+    margin-bottom: 3rem;
 }
 
-.search p {
-    border: grey 0.1rem solid;
-    justify-self: center;
-    align-items: center;
-    width: 20%;
-    text-align: center;
+input{
+    height: 5vh;
+    width: 20vw;
 }
 
-.course-container{
+.courses {
+    display: flex;
+    flex-direction: column;
+}
+
+.course-container {
     display: flex;
     align-content: center;
     justify-content: center;
-    margin-top: 5rem;
+    margin-top: 1rem;
 }
 
-.course{
+
+.course {
     display: flex;
     align-content: center;
     justify-content: center;
@@ -111,23 +116,23 @@ footer {
     height: 5vw;
 }
 
-.course .blue{
+.course .blue {
     background-color: #003787;
     width: 3vw;
 }
 
-.course .name-of-the-course{
+.course .name-of-the-course {
     display: flex;
     justify-content: center;
     align-items: center;
     width: 70vw;
 }
 
-.course h2{
+.course h2 {
     font-weight: normal;
 }
 
-.course .dropdown{
+.course .dropdown {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -135,16 +140,32 @@ footer {
     border-left: grey 0.1rem solid;
 }
 
-.new-course p{
-    align-content: center;
-    justify-content: center;
-    border: grey 0.1rem solid;
-    background-color: #003787;
-    width: 5vw;
-    height: 5vh;
+button{
+    border: none;
 }
-.new-course{
+.new-course {
     display: flex;
+    align-content: center;
     justify-content: end;
-    margin: 5rem;
+    margin-top: 1rem;
+    padding-right: 2rem;
+
+}
+
+.new-course p {
+    border: grey 0.1rem solid;
+    border-radius: 0.5rem;
+    color: white;
+    font-size: 1.2rem;
+    padding: 1rem;
+    background-color: #003787;
+}
+
+.new-course img {
+    width: 1vw;
+    height: 1vw;
+}
+
+.new-course {
+
 }

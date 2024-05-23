@@ -78,6 +78,10 @@ footer {
     color: darkblue;
 }
 
+button {
+    border: none;
+}
+
 .mark-as-ended {
     display: flex;
     flex-direction: row-reverse;
@@ -123,18 +127,23 @@ footer {
     color: #000000A8;
 }
 
-.heading-two a{
+.heading-two a {
     color: #000000A8;
 }
 
-.course-container{
+.courses {
+    display: flex;
+    flex-direction: column;
+}
+
+.course-container {
     display: flex;
     align-content: center;
     justify-content: center;
-    margin-top: 5rem;
+    margin-top: 1rem;
 }
 
-.course{
+.course {
     display: flex;
     align-content: center;
     justify-content: center;
@@ -142,23 +151,23 @@ footer {
     height: 5vw;
 }
 
-.course .orange{
+.course .orange {
     background-color: #C56106;
     width: 3vw;
 }
 
-.course .name-of-the-course{
+.course .name-of-the-course {
     display: flex;
     justify-content: center;
     align-items: center;
     width: 70vw;
 }
 
-.course h2{
+.course h2 {
     font-weight: normal;
 }
 
-.course .dropdown{
+.course .dropdown {
     display: flex;
     justify-content: center;
     align-items: center;
