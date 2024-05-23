@@ -1,4 +1,4 @@
-package Classes
+package main
 
 import (
 	"database/sql"
