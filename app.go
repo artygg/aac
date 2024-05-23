@@ -56,7 +56,9 @@ func (a *App) Run(addr string) {
 
 func (a *App) initializeRoutes() {
 	a.Router.Handle("/api/device/check", a.deviceAuthMiddleware(http.HandlerFunc(a.checkDevice))).Methods("GET")
-
+	a.Router.HandleFunc("/login", a.loginHandler).Methods("POST")
+	a.Router.HandleFunc("/logout", a.logoutHandler)
+	a.Router.Handle("/protected", a.userAuthMiddleware(http.HandlerFunc(a.protectedHandler))).Methods("GET")
 	//a.Router.HandleFunc("/products", a.).Methods("GET")
 	//a.Router.HandleFunc("/product", a.createProduct).Methods("POST")
 	//a.Router.HandleFunc("/product", a.getUser).Methods("GET")
@@ -108,16 +110,16 @@ func (a *App) userAuthMiddleware(next http.Handler) http.Handler {
 	})
 }
 func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
-	login := r.FormValue("login")
-	password := r.FormValue("password")
-
-	if login == "" || password == "" {
+	teacher := Teacher{}
+	err := json.NewDecoder(r.Body).Decode(&teacher)
+	log.Println(teacher)
+	password := teacher.Password
+	if teacher.Email == "" || teacher.Password == "" {
 		http.Error(w, "Login and password are required", http.StatusBadRequest)
 		return
 	}
 
-	user := Teacher{Login: login}
-	if err := user.getUser(a.DB); err != nil {
+	if err := teacher.getTeacher(a.DB); err != nil {
 		switch err {
 		case sql.ErrNoRows:
 			http.Error(w, "Invalid login", http.StatusUnauthorized)
@@ -128,23 +130,26 @@ func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if user.Password != password {
+	if teacher.Password != password {
 		http.Error(w, "Invalid password", http.StatusUnauthorized)
 		return
 	}
 
 	// Create a session
-	session, _ := store.Get(r, "session-name")
+	session, _ := a.Store.Get(r, "aas-user")
 	session.Values["authenticated"] = true
-	session.Values["user"] = user.Login
-	session.Values["userID"] = user.ID
-	session.Save(r, w)
+	session.Values["user"] = teacher.Email
+	session.Values["userID"] = teacher.Id
+	err = session.Save(r, w)
+	if err != nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+	}
 
 	http.Redirect(w, r, "/protected", http.StatusFound)
 }
 
 func (a *App) logoutHandler(w http.ResponseWriter, r *http.Request) {
-	session, _ := store.Get(r, "session-name")
+	session, _ := a.Store.Get(r, "aas-user")
 	session.Values["authenticated"] = false
 	delete(session.Values, "user")
 	delete(session.Values, "userID")
@@ -201,4 +206,14 @@ func (a *App) compareFace(w http.ResponseWriter, r *http.Request) {
 	} else {
 		w.WriteHeader(http.StatusUnauthorized)
 	}
+}
+
+func (a *App) protectedHandler(w http.ResponseWriter, r *http.Request) {
+
+	session, _ := a.Store.Get(r, "aas-user")
+
+	login := session.Values["user"]
+	userID := session.Values["userID"]
+
+	fmt.Fprintf(w, "Hello, %s! Your user ID is %d. This is a protected route.", login, userID)
 }

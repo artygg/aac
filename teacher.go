@@ -15,6 +15,6 @@ type Teacher struct {
 }
 
 func (teacher *Teacher) getTeacher(db *sql.DB) error {
-	qwery := fmt.Sprintf("SELECT * FROM `teachers` where email LIKE '%v' LIMIT 1", teacher.Email)
+	qwery := fmt.Sprintf("SELECT * FROM `teacher` where email LIKE '%v' LIMIT 1", teacher.Email)
 	return db.QueryRow(qwery).Scan(&teacher.Id, &teacher.FirstName, &teacher.LastName, &teacher.Email, &teacher.Password, &teacher.RegistrationDate)
 }
