@@ -9,8 +9,10 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
+	"io"
 	"log"
 	"net/http"
+	"os"
 )
 
 type App struct {
@@ -56,15 +58,23 @@ func (a *App) Run(addr string) {
 
 func (a *App) initializeRoutes() {
 	a.Router.Handle("/api/device/check", a.deviceAuthMiddleware(http.HandlerFunc(a.checkDevice))).Methods("GET")
-	a.Router.HandleFunc("/login", a.loginHandler).Methods("POST")
+	a.Router.Handle("/api/device/upload", a.deviceAuthMiddleware(http.HandlerFunc(a.uploadImage))).Methods("POST")
+	a.Router.HandleFunc("/api/web/login", a.loginHandler).Methods("POST")
+
+	a.Router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./platform/index.html")
+	})
+
+	a.Router.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./platform/login.html")
+	})
+
+	a.Router.Handle("/protected", a.userAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./platform/protected.html")
+	})))
+
 	a.Router.HandleFunc("/logout", a.logoutHandler)
-	a.Router.Handle("/protected", a.userAuthMiddleware(http.HandlerFunc(a.protectedHandler))).Methods("GET")
-	//a.Router.HandleFunc("/products", a.).Methods("GET")
-	//a.Router.HandleFunc("/product", a.createProduct).Methods("POST")
-	//a.Router.HandleFunc("/product", a.getUser).Methods("GET")
 	//a.Router.Handle("/api/web/courses", a.userAuthMiddleware(http.HandlerFunc(a.getCourses))).Methods("GET")
-	//a.Router.HandleFunc("/product/{id:[0-9]+}", a.updateProduct).Methods("PUT")
-	//a.Router.HandleFunc("/product/{id:[0-9]+}", a.deleteProduct).Methods("DELETE")
 }
 func (a *App) deviceAuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -165,47 +175,48 @@ func (a *App) checkDevice(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Fprintf(w, "Device MAC: %s, Device Key: %s, Room: %s", device.Mac, device.Key, device.Room)
 }
-func (a *App) compareFace(w http.ResponseWriter, r *http.Request) {
-	device := Device{}
-	err := json.NewDecoder(r.Body).Decode(&device)
-	log.Println(device)
-	key := device.Key
+func (a *App) uploadImage(w http.ResponseWriter, r *http.Request) {
+	device, ok := r.Context().Value("device").(Device)
+	if !ok {
+		http.Error(w, "Device information not found", http.StatusInternalServerError)
+		return
+	}
+	err := r.ParseMultipartForm(10 << 20) // 10 MB maximum file size
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		fmt.Println("Error parsing form:", err)
+		http.Error(w, "Error parsing form", http.StatusBadRequest)
 		return
 	}
-	if device.Mac == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	if device.Key == "" {
-		w.WriteHeader(http.StatusNetworkAuthenticationRequired)
-		return
-	}
-	if err := device.getDevice(a.DB); err != nil {
-		switch err {
-		case sql.ErrNoRows:
-			w.WriteHeader(http.StatusNotFound)
-		default:
 
-			log.Fatalln(err)
-			w.WriteHeader(http.StatusInternalServerError)
-		}
+	// Get the file from the form data
+	file, handler, err := r.FormFile("image")
+	if err != nil {
+		fmt.Println("Error retrieving file:", err)
+		http.Error(w, "Error retrieving file", http.StatusBadRequest)
 		return
 	}
-	log.Println(key)
-	log.Println(device.Key)
-	if key == device.Key {
-		w.WriteHeader(http.StatusAccepted)
-		w.Header().Set("Content-Type", "text/html")
-		_, err := w.Write([]byte("<h1>Sofronie LOH</h1>"))
-		if err != nil {
-			log.Fatal("error writing response")
-			return
-		}
-	} else {
-		w.WriteHeader(http.StatusUnauthorized)
+	defer file.Close()
+
+	// Create a new file on the server to store the uploaded image
+	f, err := os.OpenFile("./uploads/"+handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
+	if err != nil {
+		fmt.Println("Error creating file:", err)
+		http.Error(w, "Error creating file", http.StatusInternalServerError)
+		return
 	}
+	defer f.Close()
+
+	// Copy the uploaded file to the new file on the server
+	_, err = io.Copy(f, file)
+	if err != nil {
+		fmt.Println("Error copying file:", err)
+		http.Error(w, "Error copying file", http.StatusInternalServerError)
+		return
+	}
+
+	// Send a success response
+	fmt.Fprintf(w, "File uploaded successfully: %s", handler.Filename)
+	fmt.Fprintf(w, "Device MAC: %s, Device Key: %s, Room: %s", device.Mac, device.Key, device.Room)
 }
 
 func (a *App) protectedHandler(w http.ResponseWriter, r *http.Request) {
