@@ -42,14 +42,14 @@ header .dots {
 }
 
 footer {
-    display: flex;
-    justify-content: center;
-    padding: 2rem;
-    gap: 1rem;
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-}
+     display: flex;
+     justify-content: center;
+     padding: 2rem;
+     gap: 1rem;
+     position: absolute;
+     bottom: 0;
+     width: 100%;
+ }
 
 .main-part {
 

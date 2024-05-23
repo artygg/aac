@@ -1,0 +1,139 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    fonst-family: Arial, Helvetica, sans-serif;
+}
+
+.main-part {
+    margin: 5rem;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 2rem
+}
+
+header .logo {
+    max-width: 7vw;
+    width: auto;
+    display: block;
+}
+
+header .dots {
+    width: 3vw;
+    height: 3vw;
+}
+
+.main-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+    font-size: 2rem;
+}
+
+.main-header h1 {
+    font-weight: normal;
+    color: #003787;
+}
+
+.search-bar {
+    margin: 5vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.search-bar-border {
+    border: lightgray 0.1rem solid;
+}
+
+.search-bar input {
+    border: none;
+    height: 5vh;
+    width: 20vw;
+}
+
+.courses {
+}
+
+.course-container {
+    display: flex;
+    justify-content: center;
+    padding-top: 0.5rem;
+}
+
+.course {
+    display: flex;
+    border: #003787 0.1rem solid;
+}
+
+.color {
+    display: flex;
+    background-color: #003787;
+    width: 4vh;
+    height: 10vh;
+}
+
+.link-to-the-course {
+    display: flex;
+    align-items: center;
+    padding-left: 1rem;
+    width: 60vw;
+    height: 10vh;
+    border-left: #003787 0.1rem solid;
+}
+
+.link-to-the-course a {
+    text-decoration: none;
+    color: black;
+    font-size: 1.5rem;
+}
+
+.dropdown {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 15vh;
+    height: 10vh;
+    border-left: #003787 0.1rem solid;
+}
+
+.new-course {
+    display: flex;
+    justify-content: end;
+    margin: 2rem;
+    padding: 1rem 1rem 1rem 1rem;
+}
+
+.new-course a {
+    background-color: #003787;
+    text-decoration: none;
+    color: white;
+    border: #003787 0.1rem solid;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    padding-right: 1rem;
+}
+
+.new-course img {
+    width: auto;
+    height: 6vh;
+    padding: 1rem;
+}
+
+.footer {
+    display: flex;
+    justify-content: center;
+    padding: 2rem;
+    gap: 1rem;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    color: #00000078;
+}
