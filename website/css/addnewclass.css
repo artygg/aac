@@ -69,7 +69,7 @@ header .dots {
 .main-container-item {
     display: flex;
     flex-direction: column;
-    padding-top: 1rem;
+    padding-top: 1.5rem;
 }
 
 .main-container-item input {
@@ -79,10 +79,11 @@ header .dots {
 .main-container-item select {
     width: 10%;
     padding-bottom: 0.3rem;
+    border: #0000001C 0.1rem solid;
 }
 
 .main-container-item h3 {
-    padding-bottom: 0.5rem;
+    padding-bottom: 0.8rem;
     text-decoration: none;
     font-weight: normal;
 }
@@ -95,6 +96,7 @@ header .dots {
 
 .date {
     width: 10%;
+    border: #0000001C 0.1rem solid;
 }
 
 .main-container-subitem {
@@ -123,9 +125,7 @@ header .dots {
 .footer {
     display: flex;
     justify-content: center;
-    padding: 2rem;
+    padding-top: 2rem;
     gap: 1rem;
-    bottom: 0;
-    width: 100%;
     font-size: 0.8rem;
 }
