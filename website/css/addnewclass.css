@@ -97,7 +97,7 @@ header .dots {
     justify-content: center;
     padding: 2rem;
     gap: 1rem;
-    /*position: absolute;*/
     bottom: 0;
     width: 100%;
+    font-size: 0.8rem;
 }
