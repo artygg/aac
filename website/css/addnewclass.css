@@ -61,7 +61,7 @@ header .dots {
 .main-container {
     display: flex;
     flex-direction: column;
-    padding: 2rem;
+    padding: 3rem;
     gap: 1rem;
 }
 
@@ -96,7 +96,7 @@ header .dots {
     justify-content: center;
     padding: 2rem;
     gap: 1rem;
-    position: absolute;
+    /*position: absolute;*/
     bottom: 0;
     width: 100%;
 }
