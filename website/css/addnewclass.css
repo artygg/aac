@@ -67,7 +67,34 @@ header .dots {
 }
 
 .main-container-item {
+    display: flex;
+    flex-direction: column;
     padding-top: 1rem;
+}
+
+.main-container-item input {
+    padding-bottom: 0.3rem;
+}
+
+.main-container-item select {
+    width: 10%;
+    padding-bottom: 0.3rem;
+}
+
+.main-container-item h3 {
+    padding-bottom: 0.5rem;
+    text-decoration: none;
+    font-weight: normal;
+}
+
+.name-input {
+    width: 40%;
+    background-color: #D9D9D924;
+    border: #0000001C 0.1rem solid;
+}
+
+.date {
+    width: 10%;
 }
 
 .main-container-subitem {
@@ -89,6 +116,7 @@ header .dots {
     border-radius: 0.5rem;
     background-color: #003787;
     color: white;
+    margin-top: 5rem;
     padding: 0.5rem;
 }
 

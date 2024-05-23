@@ -27,43 +27,28 @@
 
     <div class="main-container">
         <h2>Add new class description</h2>
-        <div class="main-container-item">
-            <p>Name of the class</p>
-            <input>
-        </div>
-        <div class="main-container-item">
-            <p>Name of the class</p>
-            <input>
-        </div>
-        <div class="main-container-item">
-            <p>Name of the class</p>
-            <input>
-        </div>
-        <div class="main-container-item">
-            <p>Check class details</p>
-            <div class="main-container-subitem">
-                <div>
-                    <p>Class name</p>
-                    <input>
-                </div>
-                <div>
-                    <p>Class name</p>
-                    <input>
-                </div>
-                <div>
-                    <p>Class name</p>
-                    <input>
-                </div>
+        <form action="/submit_class_description" method="post">
+            <div class="main-container-item">
+                <h3><label for="className">Name of the class</label></h3>
+                <input type="text" id="className" name="className" required class="name-input">
             </div>
-        </div>
-        <div class="main-container-button">
-            <div class="start-button">
-                <p>Start the class</p>
+            <div class="main-container-item">
+                <h3><label for="classDate">Date of the class</label></h3>
+                <input type="date" id="classDate" name="classDate" required class="date">
             </div>
-            <p>Save a draft</p>
-        </div>
-    </div>
+            <div class="main-container-item">
+                <h3><label for="courseGroups">Add course groups</label></h3>
+                <select id="courseGroups" name="courseGroups" required>
+                    <option value="" disabled selected>Choose groups</option>
+                    <!-- Add options here -->
+                    <option value="group1">Group 1</option>
+                    <option value="group2">Group 2</option>
+                    <option value="group3">Group 3</option>
+                </select>
+            </div>
 
+            <input type="submit" value="Submit" class="start-button">
+        </form>
     <div class="footer">
         <p>Terms</p>
         <p>Privacy</p>
