@@ -44,32 +44,6 @@ header .dots {
     transform: rotate(180deg);
 }
 
-.main-header {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding:1rem;
-    gap: 1rem;
-}
-
-.main-header img {
-    display: block;
-    max-width: 3vw;
-    width: auto;
-}
-
-.main-header h1 {
-    color: #003787;
-    font-weight: normal;
-    font-size: 2.2rem;
-}
-
-.main-header p {
-    font-size: 1.4rem;
-    color: #003787;
-}
-
 .main-container {
     display: flex;
     flex-direction: column;
