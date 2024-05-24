@@ -1,0 +1,142 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+}
+
+header img {
+    display: block;
+    max-width: 7vw;
+    width: auto;
+}
+
+header .dots {
+    width: 3vw;
+    height: 3vw;
+    margin-right: 5rem;
+}
+
+.back-arrow-dots {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+}
+
+.back-arrow {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.arrow {
+    width: 1.5vw;
+    height: 1vw;
+    transform: rotate(180deg);
+}
+
+.main-header {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding:1rem;
+    gap: 1rem;
+}
+
+.main-header img {
+    display: block;
+    max-width: 3vw;
+    width: auto;
+}
+
+.main-header h1 {
+    color: #003787;
+    font-weight: normal;
+    font-size: 2.2rem;
+}
+
+.main-header p {
+    font-size: 1.4rem;
+    color: #003787;
+}
+
+.main-container {
+    display: flex;
+    flex-direction: column;
+    padding: 3rem;
+    gap: 1rem;
+}
+
+.main-container-item {
+    display: flex;
+    flex-direction: column;
+    padding-top: 1.5rem;
+}
+
+.main-container-item input {
+    padding-bottom: 0.3rem;
+}
+
+.main-container-item select {
+    width: 10%;
+    padding-bottom: 0.3rem;
+    border: #0000001C 0.1rem solid;
+}
+
+.main-container-item h3 {
+    padding-bottom: 0.8rem;
+    text-decoration: none;
+    font-weight: normal;
+}
+
+.name-input {
+    width: 40%;
+    background-color: #D9D9D924;
+    border: #0000001C 0.1rem solid;
+}
+
+.date {
+    width: 10%;
+    border: #0000001C 0.1rem solid;
+}
+
+.main-container-subitem {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    padding-top: 0.5rem;
+}
+
+.main-container-button {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding-top: 1rem;
+}
+
+.start-button {
+    border: #003787 0.1rem solid;
+    border-radius: 0.5rem;
+    background-color: #003787;
+    color: white;
+    margin-top: 5rem;
+    padding: 0.5rem;
+}
+
+.footer {
+    display: flex;
+    justify-content: center;
+    padding-top: 2rem;
+    gap: 1rem;
+    font-size: 0.8rem;
+}
