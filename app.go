@@ -1,3 +1,5 @@
+//app.go
+
 package main
 
 import (
@@ -6,13 +8,14 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/gorilla/mux"
-	"github.com/gorilla/sessions"
 	"io"
 	"log"
 	"net/http"
 	"os"
+
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/gorilla/mux"
+	"github.com/gorilla/sessions"
 )
 
 type App struct {
@@ -129,7 +132,7 @@ func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := teacher.getTeacher(a.DB); err != nil {
+	if err := teacher.getCoursesByTeacher(a.DB); err != nil {
 		switch err {
 		case sql.ErrNoRows:
 			http.Error(w, "Invalid login", http.StatusUnauthorized)
@@ -227,4 +230,50 @@ func (a *App) protectedHandler(w http.ResponseWriter, r *http.Request) {
 	userID := session.Values["userID"]
 
 	fmt.Fprintf(w, "Hello, %s! Your user ID is %d. This is a protected route.", login, userID)
+}
+
+func (a *App) getCourses(w http.ResponseWriter, r *http.Request) {
+	// Get the session
+	session, err := a.Store.Get(r, "aas-user")
+	if err != nil {
+		http.Error(w, "Failed to get session", http.StatusInternalServerError)
+		log.Println("Error retrieving session:", err)
+		return
+	}
+
+	authenticated, ok := session.Values["authenticated"].(bool)
+	if !ok || !authenticated {
+		http.Error(w, "Forbidden", http.StatusForbidden)
+		log.Println("User not authenticated")
+		return
+	}
+
+	teacherID, ok := session.Values["userID"].(int)
+	if !ok {
+		http.Error(w, "Failed to get user ID from session", http.StatusInternalServerError)
+		log.Println("Error retrieving user ID from session")
+		return
+	}
+
+	teacher := Teacher{Id: teacherID}
+
+	err = teacher.getCoursesByTeacher(a.DB)
+	if err != nil {
+		http.Error(w, "Failed to get courses", http.StatusInternalServerError)
+		log.Println("Error retrieving courses:", err)
+		return
+	}
+
+	log.Printf("Retrieved courses: %+v\n", teacher.Courses)
+
+	response := map[string]interface{}{
+		"user_id": teacherID,
+		"courses": teacher.Courses,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, "Failed to encode courses", http.StatusInternalServerError)
+		log.Println("Error encoding courses to JSON:", err)
+	}
 }
