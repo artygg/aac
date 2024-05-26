@@ -12,8 +12,8 @@ type Class struct {
 	Id          int          `json:"id"`
 	CourseId    int          `json:"course_id"`
 	Room        string       `json:"room"`
-	StartTime   time.Time    `json:"time"`
-	EndTime     time.Time    `json:"time"`
+	StartTime   time.Time    `json:"starttime"`
+	EndTime     time.Time    `json:"endtime"`
 	Attendances []Attendance `json:"attendances"`
 }
 

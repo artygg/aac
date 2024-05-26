@@ -1,5 +1,3 @@
-//app.go
-
 package main
 
 import (
@@ -12,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
@@ -132,7 +131,7 @@ func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := teacher.getCoursesByTeacher(a.DB); err != nil {
+	if err := teacher.getTeacher(a.DB); err != nil {
 		switch err {
 		case sql.ErrNoRows:
 			http.Error(w, "Invalid login", http.StatusUnauthorized)
@@ -233,7 +232,6 @@ func (a *App) protectedHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) getCourses(w http.ResponseWriter, r *http.Request) {
-	// Get the session
 	session, err := a.Store.Get(r, "aas-user")
 	if err != nil {
 		http.Error(w, "Failed to get session", http.StatusInternalServerError)
@@ -275,5 +273,80 @@ func (a *App) getCourses(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		http.Error(w, "Failed to encode courses", http.StatusInternalServerError)
 		log.Println("Error encoding courses to JSON:", err)
+	}
+}
+
+func (a *App) getGroups(w http.ResponseWriter, r *http.Request) {
+	session, err := a.Store.Get(r, "aas-user")
+	if err != nil {
+		http.Error(w, "Failed to get session", http.StatusInternalServerError)
+		log.Println("Error retrieving session:", err)
+		return
+	}
+
+	authenticated, ok := session.Values["authenticated"].(bool)
+	if !ok || !authenticated {
+		http.Error(w, "Forbidden", http.StatusForbidden)
+		log.Println("User not authenticated")
+		return
+	}
+
+	groupCluster := GroupCluster{}
+
+	err = groupCluster.getGroups(a.DB)
+	if err != nil {
+		http.Error(w, "Failed to get courses", http.StatusInternalServerError)
+		log.Println("Error retrieving courses:", err)
+		return
+	}
+
+	log.Printf("Retrieved courses: %+v\n", groupCluster.Groups)
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(groupCluster.Groups); err != nil {
+		http.Error(w, "Failed to encode courses", http.StatusInternalServerError)
+		log.Println("Error encoding courses to JSON:", err)
+	}
+}
+
+func (a *App) getAttendences(w http.ResponseWriter, r *http.Request) {
+	session, err := a.Store.Get(r, "aas-user")
+	if err != nil {
+		http.Error(w, "Failed to get session", http.StatusInternalServerError)
+		log.Println("Error retrieving session:", err)
+		return
+	}
+
+	authenticated, ok := session.Values["authenticated"].(bool)
+	if !ok || !authenticated {
+		http.Error(w, "Forbidden", http.StatusForbidden)
+		log.Println("User not authenticated")
+		return
+	}
+
+	vars := mux.Vars(r)
+	classIDStr := vars["class_id"]
+	classID, err := strconv.Atoi(classIDStr)
+	if err != nil {
+		http.Error(w, "Invalid class ID", http.StatusBadRequest)
+		log.Println("Invalid class ID:", err)
+		return
+	}
+
+	class := Class{Id: classID}
+
+	err = class.getAttendencesByClass(a.DB)
+	if err != nil {
+		http.Error(w, "Failed to get attendances", http.StatusInternalServerError)
+		log.Println("Error retrieving attendances:", err)
+		return
+	}
+
+	log.Printf("Retrieved attendances: %+v\n", class.Attendances)
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(class.Attendances); err != nil {
+		http.Error(w, "Failed to encode attendances", http.StatusInternalServerError)
+		log.Println("Error encoding attendances to JSON:", err)
 	}
 }
