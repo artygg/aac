@@ -18,7 +18,7 @@ type Teacher struct {
 	Courses          []Course  `json:"courses"`
 }
 
-func (teacher *Teacher) getCoursesByTeacher(db *sql.DB) error {
+func (teacher *Teacher) getCourses(db *sql.DB) error {
 	qwery := fmt.Sprintf("SELECT * FROM `courses` where `TeacherID`= '%v'", teacher.Id)
 	rows, err := db.Query(qwery)
 	if err != nil {

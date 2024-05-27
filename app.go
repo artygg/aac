@@ -235,7 +235,7 @@ func (a *App) protectedHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello, %s! Your user ID is %d. This is a protected route.", login, userID)
 }
 
-func (a *App) getCourses(w http.ResponseWriter, r *http.Request) {
+func (a *App) getCoursesByTeacherID(w http.ResponseWriter, r *http.Request) {
 	session, err := a.Store.Get(r, "aas-user")
 	if err != nil {
 		http.Error(w, "Failed to get session", http.StatusInternalServerError)
@@ -259,7 +259,7 @@ func (a *App) getCourses(w http.ResponseWriter, r *http.Request) {
 
 	teacher := Teacher{Id: teacherID}
 
-	err = teacher.getCoursesByTeacher(a.DB)
+	err = teacher.getCourses(a.DB)
 	if err != nil {
 		http.Error(w, "Failed to get courses", http.StatusInternalServerError)
 		log.Println("Error retrieving courses:", err)
@@ -280,7 +280,7 @@ func (a *App) getCourses(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (a *App) getGroups(w http.ResponseWriter, r *http.Request) {
+func (a *App) getAllGroups(w http.ResponseWriter, r *http.Request) {
 	session, err := a.Store.Get(r, "aas-user")
 	if err != nil {
 		http.Error(w, "Failed to get session", http.StatusInternalServerError)
@@ -313,7 +313,7 @@ func (a *App) getGroups(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (a *App) getAttendences(w http.ResponseWriter, r *http.Request) {
+func (a *App) getAttendencesByClassID(w http.ResponseWriter, r *http.Request) {
 	session, err := a.Store.Get(r, "aas-user")
 	if err != nil {
 		http.Error(w, "Failed to get session", http.StatusInternalServerError)
@@ -339,7 +339,7 @@ func (a *App) getAttendences(w http.ResponseWriter, r *http.Request) {
 
 	class := Class{Id: classID}
 
-	err = class.getAttendencesByClass(a.DB)
+	err = class.getAttendences(a.DB)
 	if err != nil {
 		http.Error(w, "Failed to get attendances", http.StatusInternalServerError)
 		log.Println("Error retrieving attendances:", err)
@@ -372,7 +372,6 @@ func (a *App) getClassesByCourseID(w http.ResponseWriter, r *http.Request) {
 
 func (a *App) getGroupsByCourseID(w http.ResponseWriter, r *http.Request) {
 	courseID := r.URL.Query().Get("courseID")
-	
 
 	groups, err := getGroups(a.DB, courseID)
 	if err != nil {

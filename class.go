@@ -5,6 +5,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"time"
 )
 
@@ -17,7 +18,7 @@ type Class struct {
 	Attendances []Attendance `json:"attendances"`
 }
 
-func (class *Class) getAttendencesByClass(db *sql.DB) error {
+func (class *Class) getAttendences(db *sql.DB) error {
 	qwery := fmt.Sprintf("SELECT * FROM `attendance` where `ClassId`= '%v'", class.Id)
 	rows, err := db.Query(qwery)
 	if err != nil {
@@ -25,7 +26,7 @@ func (class *Class) getAttendencesByClass(db *sql.DB) error {
 	}
 	for rows.Next() {
 		var attendance Attendance
-		err := rows.Scan(&attendance.ClassId, &attendance.StudentId, &attendance.Time, &attendance.Status)
+		err := rows.Scan(&attendance.ClassID, &attendance.StudentID, &attendance.Time, &attendance.Status)
 		if err != nil {
 			return err
 		}
