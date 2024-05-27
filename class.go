@@ -33,3 +33,35 @@ func (class *Class) getAttendencesByClass(db *sql.DB) error {
 	}
 	return nil
 }
+
+func getClasses(db *sql.DB, courseID string) ([]Class, error) {
+	query := fmt.Sprintf("SELECT Id, CourseID, Room, StartTime, EndTime FROM classes WHERE CourseID = %s", courseID)
+	rows, err := db.Query(query)
+	if err != nil {
+		log.Println("Error executing query:", err)
+		return nil, fmt.Errorf("failed to execute query: %w", err)
+	}
+	defer func() {
+		if err := rows.Close(); err != nil {
+			log.Println("Error closing rows:", err)
+		}
+	}()
+
+	var classes []Class
+
+	for rows.Next() {
+		var class Class
+		if err := rows.Scan(&class.ID, &class.CourseID, &class.Room, &class.StartTime, &class.EndTime); err != nil {
+			log.Println("Error scanning row:", err)
+			return nil, fmt.Errorf("failed to scan row: %w", err)
+		}
+		classes = append(classes, class)
+	}
+
+	if err := rows.Err(); err != nil {
+		log.Println("Error iterating over rows:", err)
+		return nil, fmt.Errorf("error iterating over rows: %w", err)
+	}
+
+	return classes, nil
+}

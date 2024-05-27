@@ -63,6 +63,10 @@ func (a *App) initializeRoutes() {
 	a.Router.Handle("/api/device/upload", a.deviceAuthMiddleware(http.HandlerFunc(a.uploadImage))).Methods("POST")
 	a.Router.HandleFunc("/api/web/login", a.loginHandler).Methods("POST")
 
+	a.Router.HandleFunc("/api/web/classes/{courseID}", a.userAuthMiddleware(http.HandlerFunc(a.getClassesByCourseID))).Methods("GET")
+	a.Router.HandleFunc("/api/groups/{courseID}", a.userAuthMiddleware(http.HandlerFunc(a.getGroupsByCourseID))).Methods("GET")
+	a.Router.HandleFunc("/api/groups/{courseID}", a.userAuthMiddleware(http.HandlerFunc(a.getAttendanceByCourseID))).Methods("GET")
+
 	a.Router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./platform/index.html")
 	})
@@ -348,5 +352,51 @@ func (a *App) getAttendences(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(class.Attendances); err != nil {
 		http.Error(w, "Failed to encode attendances", http.StatusInternalServerError)
 		log.Println("Error encoding attendances to JSON:", err)
+	}
+}
+
+func (a *App) getClassesByCourseID(w http.ResponseWriter, r *http.Request) {
+	courseID := r.URL.Query().Get("courseID")
+
+	classes, err := getClasses(a.DB, courseID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(classes); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func (a *App) getGroupsByCourseID(w http.ResponseWriter, r *http.Request) {
+	courseID := r.URL.Query().Get("courseID")
+	
+
+	groups, err := getGroups(a.DB, courseID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(groups); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func (a *App) getAttendanceByCourseID(w http.ResponseWriter, r *http.Request) {
+	courseID := r.URL.Query().Get("courseID")
+
+	attendance, err := getAttendance(a.DB, courseID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(attendance); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
