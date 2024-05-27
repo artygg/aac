@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="css/register.css" type="text/css">
@@ -32,45 +32,39 @@
                 <p>Validate your email</p>
             </div>
         </div>
-        <div class="header-tab-item grey-out">
-            <img src="img/teacher.png" alt="pic">
-            <div class="header-tab-text">
-                <h3>Step 3:</h3>
-                <p>Prove you are a teacher</p>
-            </div>
-        </div>
     </div>
 
     <div class="main-container">
-        <div class="main-form">
+        <form class="main-form" action="addnewcourse.html" method="post">
             <h2>Create your personal account</h2>
             <div class="main-form-item">
-                <h3>Full name</h3>
-                <input>
+                <label for="full_name">Full name</label>
+                <input type="text" name="full_name" id="full_name">
                 <p>This will be your username</p>
             </div>
             <div class="main-form-item">
-                <h3>Email address</h3>
-                <input>
+                <label for="email">Email address</label>
+                <input type="email" name="email" id="email">
                 <p>We will occasionally send updates about your account to this inbox.</p>
             </div>
             <div class="main-form-item">
-                <h3>Password</h3>
-                <input>
+                <label for="password">Password</label>
+                <input type="password" name="password" id="password">
                 <p>Make sure it is at least 8 characters including a number, a lowercase letter and an uppercase letter.</p>
             </div>
             <div class="main-form-item">
-                <h3>Validate your password</h3>
-                <input>
+                <label for="validate_password">Validate your password</label>
+                <input type="password" name="validate_password" id="validate_password">
                 <p>Make sure it is at least 8 characters including a number, a lowercase letter and an uppercase letter.</p>
             </div>
-        </div>
-        <div class="main-form-create">
-            <p>By clicking “Create an account” below, you agreeing to the Terms of Service and the Privacy Policy.</p>
-            <div class="button">
-                <p>Create an account</p>
+            <div class="main-form-create">
+                <p>By clicking “Create an account” below, you are agreeing to the Terms of Service and the Privacy Policy.</p>
+                <div class="button">
+                    <input type="submit" value="Create an account" name="create_account" id="create_account" class="submit-button">
+                </div>
             </div>
-        </div>
+        </form>
+
     </div>
 
     <div class="footer">

@@ -44,7 +44,7 @@
 
 .header-tab {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
     margin: 2rem;
 }
 
@@ -98,7 +98,7 @@
     padding-top: 1rem;
 }
 
-.main-form-item h3{
+.main-form-item label{
     padding-bottom: 0.4rem;
     text-decoration: none;
 }
@@ -124,7 +124,7 @@
     font-size: 0.8rem;
 }
 
-.button{
+.submit-button {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -136,7 +136,6 @@
     margin-top: 1rem;
     margin-right: 50%;
 }
-
 
 .footer {
     display: flex;

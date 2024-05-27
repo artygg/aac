@@ -13,18 +13,16 @@
         <div class="container-header">
             <h2>Sing in to AAS</h2>
         </div>
-        <div class="container-main">
-            <p>Email address</p>
-            <input>
+        <form class="container-main">
+            <label for="email">Email address</label>
+            <input type="email" name="email" id="email">
             <div class="password-container">
-                <p>Password</p>
+                <label for="password">Password</label>
                 <a href="">Forgot password?</a>
             </div>
-            <input>
-            <div class="test">
-                <p>Sign in</p>
-            </div>
-        </div>
+            <input type="password" name="password" id="password">
+            <input type="submit" value="Sign in" name="sign_in" id="sign_in" class="test">
+        </form>
         <div class="container-footer">
             <p>New to AAS?</p>
             <a href="">Create an account</a>

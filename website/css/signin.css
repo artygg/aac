@@ -48,7 +48,7 @@
     gap: 1rem;
 }
 
-.password-container p {
+.password-container label {
     flex-grow: 1;
 }
 
@@ -58,6 +58,7 @@
 
 .test {
     display: flex;
+    font-size: 16px;
     justify-content: center;
     align-items: center;
     margin-top: 2rem;
