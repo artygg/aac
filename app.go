@@ -64,8 +64,9 @@ func (a *App) initializeRoutes() {
 	a.Router.HandleFunc("/api/web/login", a.loginHandler).Methods("POST")
 
 	a.Router.HandleFunc("/api/web/classes/{courseID}", a.userAuthMiddleware(http.HandlerFunc(a.getClassesByCourseID))).Methods("GET")
-	a.Router.HandleFunc("/api/groups/{courseID}", a.userAuthMiddleware(http.HandlerFunc(a.getGroupsByCourseID))).Methods("GET")
-	a.Router.HandleFunc("/api/groups/{courseID}", a.userAuthMiddleware(http.HandlerFunc(a.getAttendanceByCourseID))).Methods("GET")
+	a.Router.HandleFunc("/api/web/groups/{courseID}", a.userAuthMiddleware(http.HandlerFunc(a.getGroupsByCourseID))).Methods("GET")
+	a.Router.HandleFunc("/api/web/groups/{courseID}", a.userAuthMiddleware(http.HandlerFunc(a.getAttendanceByCourseID))).Methods("GET")
+	a.Router.HandleFunc("/api/web/attendance/update", a.userAuthMiddleware(http.HandlerFunc(a.updateAttendanceStatus))).Methods("POST")
 
 	a.Router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./platform/index.html")
@@ -398,4 +399,43 @@ func (a *App) getAttendanceByCourseID(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(attendance); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+}
+
+func (a *App) updateAttendanceStatus(w http.ResponseWriter, r *http.Request) {
+    var input struct {
+        StudentID int `json:"student_id"`
+        Status    int `json:"status"`
+    }
+
+    if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+        http.Error(w, "Invalid input", http.StatusBadRequest)
+        log.Println("Error decoding input:", err)
+        return
+    }
+
+    if input.Status < 0 || input.Status > 3 {
+        http.Error(w, "Invalid status value", http.StatusBadRequest)
+        log.Println("Invalid status value:", input.Status)
+        return
+    }
+
+    success, err := updateAttendance(a.DB, input.StudentID, input.Status)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        log.Println("Error updating attendance status:", err)
+        return
+    }
+
+    if !success {
+        http.Error(w, "No attendance record updated", http.StatusNotFound)
+        log.Println("No attendance record updated for StudentID:", input.StudentID)
+        return
+    }
+
+    response := map[string]string{"message": "Attendance status updated successfully"}
+    w.Header().Set("Content-Type", "application/json")
+    if err := json.NewEncoder(w).Encode(response); err != nil {
+        http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+        log.Println("Error encoding response:", err)
+    }
 }

@@ -51,3 +51,35 @@ func getAttendanceByCourse(db *sql.DB, courseID string) ([]Attendance, error) {
 
 	return attendanceRecords, nil
 }
+
+func updateAttendance(db *sql.DB, studentID, status int) (bool, error) {
+    query := `
+        UPDATE attendances
+        SET Status = ?
+        WHERE StudentId = ?`
+    stmt, err := db.Prepare(query)
+    if err != nil {
+        log.Println("Error preparing query:", err)
+        return false, fmt.Errorf("failed to prepare query: %w", err)
+    }
+    defer stmt.Close()
+
+    res, err := stmt.Exec(status, studentID)
+    if err != nil {
+        log.Println("Error executing query:", err)
+        return false, fmt.Errorf("failed to execute query: %w", err)
+    }
+
+    rowsAffected, err := res.RowsAffected()
+    if err != nil {
+        log.Println("Error getting rows affected:", err)
+        return false, fmt.Errorf("failed to get rows affected: %w", err)
+    }
+
+    if rowsAffected == 0 {
+        log.Println("No rows updated")
+        return false, fmt.Errorf("no rows updated")
+    }
+
+    return true, nil
+}
