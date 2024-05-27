@@ -358,7 +358,7 @@ func (a *App) getAttendencesByClassID(w http.ResponseWriter, r *http.Request) {
 func (a *App) getClassesByCourseID(w http.ResponseWriter, r *http.Request) {
 	courseID := r.URL.Query().Get("courseID")
 
-	classes, err := getClasses(a.DB, courseID)
+	classes, err := getClassesByCourseID(a.DB, courseID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -373,7 +373,7 @@ func (a *App) getClassesByCourseID(w http.ResponseWriter, r *http.Request) {
 func (a *App) getGroupsByCourseID(w http.ResponseWriter, r *http.Request) {
 	courseID := r.URL.Query().Get("courseID")
 
-	groups, err := getGroups(a.DB, courseID)
+	groups, err := getGroupsByCourseID(a.DB, courseID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -388,7 +388,7 @@ func (a *App) getGroupsByCourseID(w http.ResponseWriter, r *http.Request) {
 func (a *App) getAttendanceByCourseID(w http.ResponseWriter, r *http.Request) {
 	courseID := r.URL.Query().Get("courseID")
 
-	attendance, err := getAttendance(a.DB, courseID)
+	attendance, err := getAttendanceByCourse(a.DB, courseID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

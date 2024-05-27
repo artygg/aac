@@ -15,7 +15,7 @@ type Attendance struct {
 	Time      time.Time `json:"time"`
 }
 
-func getAttendance(db *sql.DB, courseID string) ([]Attendance, error) {
+func getAttendanceByCourse(db *sql.DB, courseID string) ([]Attendance, error) {
 	query := fmt.Sprintf(`
 		SELECT a.ClassId, a.Status, a.StudentId, a.Time
 		FROM attendances a

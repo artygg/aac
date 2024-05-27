@@ -35,7 +35,7 @@ func (class *Class) getAttendences(db *sql.DB) error {
 	return nil
 }
 
-func getClasses(db *sql.DB, courseID string) ([]Class, error) {
+func getClassesByCourseID(db *sql.DB, courseID string) ([]Class, error) {
 	query := fmt.Sprintf("SELECT Id, CourseID, Room, StartTime, EndTime FROM classes WHERE CourseID = %s", courseID)
 	rows, err := db.Query(query)
 	if err != nil {
