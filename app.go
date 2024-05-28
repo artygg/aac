@@ -61,7 +61,7 @@ func (a *App) Run(addr string) {
 
 func (a *App) initializeRoutes() {
 	a.Router.Handle("/api/device/check", a.deviceAuthMiddleware(http.HandlerFunc(a.checkDevice))).Methods("GET")
-	a.Router.Handle("/api/device/upload", a.deviceAuthMiddleware(http.HandlerFunc(a.uploadImage)))
+	a.Router.Handle("/api/device/upload", a.deviceAuthMiddleware(http.HandlerFunc(a.uploadImage))).Methods("POST")
 
 	a.Router.HandleFunc("/api/web/login", a.loginHandler).Methods("POST")
 
@@ -73,12 +73,14 @@ func (a *App) initializeRoutes() {
 	a.Router.Handle("/api/web/attendance/by_class", a.userAuthMiddleware(http.HandlerFunc(a.getAttendencesByClassID))).Methods("GET")
 	a.Router.Handle("/api/web/attendance/by_course", a.userAuthMiddleware(http.HandlerFunc(a.getAttendanceByCourseID))).Methods("GET")
 
-	a.Router.Handle("/api/web/attendance/update", a.userAuthMiddleware(http.HandlerFunc(a.updateAttendanceStatus))).Methods("POST")
+	a.Router.Handle("/api/web/attendance", a.userAuthMiddleware(http.HandlerFunc(a.updateAttendanceStatus))).Methods("POST")
 
-	a.Router.Handle("/api/web/course/create", a.userAuthMiddleware(http.HandlerFunc(a.createCourse))).Methods("POST")
-	a.Router.Handle("/api/web/teacher/register", http.HandlerFunc(a.registerTeacher)).Methods("POST")
-	a.Router.Handle("/api/web/teacher/register", a.userAuthMiddleware(http.HandlerFunc(a.createCourse))).Methods("POST")
+	a.Router.Handle("/api/web/course", a.userAuthMiddleware(http.HandlerFunc(a.createCourse))).Methods("POST")
+	a.Router.Handle("/api/web/teacher", http.HandlerFunc(a.registerTeacher)).Methods("POST")
+	a.initializeClient()
+}
 
+func (a *App) initializeClient() {
 	a.Router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./platform/index.html")
 	})
@@ -103,8 +105,13 @@ func (a *App) initializeRoutes() {
 		http.ServeFile(w, r, "./platform/updateAttendance.html")
 	})))
 
+	a.Router.Handle("/course/create", a.userAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./platform/newcourse.html")
+	})))
+
 	a.Router.HandleFunc("/logout", a.logoutHandler)
 }
+
 func (a *App) deviceAuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
@@ -159,7 +166,7 @@ func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := teacher.getTeacher(a.DB); err != nil {
+	if err := teacher.get(a.DB); err != nil {
 		switch err {
 		case sql.ErrNoRows:
 			http.Error(w, "Invalid login", http.StatusUnauthorized)
@@ -456,64 +463,37 @@ func (a *App) createCourse(w http.ResponseWriter, r *http.Request) {
 	}
 
 	teacherID, _ := session.Values["userID"].(int)
-	success, err := createCourse(a.DB, input.Name, input.Year, startDate, endDate, teacherID, input.Groups)
+	err = createCourse(a.DB, input.Name, input.Year, startDate, endDate, teacherID, input.Groups)
 	if err != nil {
 		http.Error(w, "Failed to create course", http.StatusInternalServerError)
 		log.Println("Error creating course:", err)
 		return
 	}
-
-	response := map[string]string{
-		"message": "Course created successfully",
-		"success": fmt.Sprintf("%t", success),
-	}
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
-		log.Println("Error encoding response:", err)
-	}
+	w.WriteHeader(200)
 }
 
 func (a *App) registerTeacher(w http.ResponseWriter, r *http.Request) {
-	var input struct {
-		Email            string `json:"email"`
-		FirstName        string `json:"first_name"`
-		LastName         string `json:"last_name"`
-		Password         string `json:"password"`
-		RegistrationDate string `json:"registration_date"`
-	}
+	var teacher = Teacher{}
 
-	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&teacher); err != nil {
 		http.Error(w, "Invalid input", http.StatusBadRequest)
 		log.Println("Error decoding input:", err)
 		return
 	}
 
-	emailPattern := regexp.MustCompile(`^[^@]+@[^@]+\.[^@]{2,}$`)
-	if !emailPattern.MatchString(input.Email) {
+	emailPattern := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@nhlstenden\.com$`)
+	if !emailPattern.MatchString(teacher.Email) {
 		http.Error(w, "Invalid email format", http.StatusBadRequest)
-		log.Println("Invalid email format:", input.Email)
+		log.Println("Invalid email format:", teacher.Email)
 		return
 	}
 
-	if input.RegistrationDate == "" {
-		input.RegistrationDate = time.Now().Format("2006-01-02")
-	}
-
-	success, err := registerTeacher(a.DB, input.Email, input.FirstName, input.LastName, input.Password, input.RegistrationDate)
+	err := teacher.register(a.DB)
 	if err != nil {
 		http.Error(w, "Failed to register teacher", http.StatusInternalServerError)
 		log.Println("Error registering teacher:", err)
 		return
 	}
 
-	response := map[string]string{
-		"message": "Teacher registered successfully",
-		"success": fmt.Sprintf("%t", success),
-	}
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
-		log.Println("Error encoding response:", err)
-	}
+	w.WriteHeader(200)
 }

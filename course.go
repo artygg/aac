@@ -37,11 +37,11 @@ func getCourse(db *sql.DB, id int) (*Course, error) {
 	return &course, nil
 }
 
-func createCourse(db *sql.DB, name string, year int, startDate, endDate time.Time, teacherID int, groups []string) (bool, error) {
+func createCourse(db *sql.DB, name string, year int, startDate, endDate time.Time, teacherID int, groups []string) error {
 	tx, err := db.Begin()
 	if err != nil {
 		log.Println("Error starting transaction:", err)
-		return false, err
+		return err
 	}
 
 	query := `INSERT INTO courses (Name, Year, StartDate, EndDate, TeacherID) VALUES (?, ?, ?, ?, ?)`
@@ -49,29 +49,29 @@ func createCourse(db *sql.DB, name string, year int, startDate, endDate time.Tim
 	if err != nil {
 		tx.Rollback()
 		log.Println("Error inserting course:", err)
-		return false, err
+		return err
 	}
 
 	courseID, err := res.LastInsertId()
 	if err != nil {
 		tx.Rollback()
 		log.Println("Error getting last insert ID:", err)
-		return false, err
+		return err
 	}
 
 	for _, groupID := range groups {
-		query := `INSERT INTO courses_groups_bridge (Courseid, GroupID) VALUES (?, ?)`
+		query := "INSERT INTO `courses-groups-bridge` (Courseid, GroupID) VALUES (?, ?)"
 		if _, err := tx.Exec(query, courseID, groupID); err != nil {
 			tx.Rollback()
 			log.Println("Error inserting into courses_groups_bridge:", err)
-			return false, err
+			return err
 		}
 	}
 
 	if err := tx.Commit(); err != nil {
 		log.Println("Error committing transaction:", err)
-		return false, err
+		return err
 	}
 
-	return true, nil
+	return nil
 }

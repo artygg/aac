@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"time"
 )
 
 type Teacher struct {
@@ -35,27 +36,27 @@ func (teacher *Teacher) getCourses(db *sql.DB) error {
 	return nil
 }
 
-func (teacher *Teacher) getTeacher(db *sql.DB) error {
+func (teacher *Teacher) get(db *sql.DB) error {
 	qwery := fmt.Sprintf("SELECT * FROM `teachers` where email LIKE '%v' LIMIT 1", teacher.Email)
 	return db.QueryRow(qwery).Scan(&teacher.Id, &teacher.FirstName, &teacher.LastName, &teacher.Email, &teacher.Password, &teacher.RegistrationDate)
 }
 
-func registerTeacher(db *sql.DB, email, firstName, lastName, password, registrationDate string) (bool, error) {
+func (teacher *Teacher) register(db *sql.DB) error {
 	query := `
         INSERT INTO teachers (email, firstName, lastName, password, registrationDate)
         VALUES (?, ?, ?, ?, ?)`
 	stmt, err := db.Prepare(query)
 	if err != nil {
 		log.Println("Error preparing query:", err)
-		return false, fmt.Errorf("failed to prepare query: %w", err)
+		return err
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(email, firstName, lastName, password, registrationDate)
+	_, err = stmt.Exec(teacher.Email, teacher.FirstName, teacher.LastName, teacher.Password, time.Now())
 	if err != nil {
 		log.Println("Error executing query:", err)
-		return false, fmt.Errorf("failed to execute query: %w", err)
+		return err
 	}
 
-	return true, nil
+	return nil
 }

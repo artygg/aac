@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"time"
 )
 
 type Attendance struct {
@@ -46,11 +47,7 @@ func getAttendanceByCourse(db *sql.DB, courseID int) ([]Attendance, error) {
 }
 
 func (attendance *Attendance) update(db *sql.DB) error {
-	query := `
-        UPDATE attendances
-        SET Status = ?
-        WHERE StudentId = ? 
-        AND ClassId = ?`
+	query := " UPDATE attendances SET `Status` = ?, `Time` = ? WHERE StudentId = ? AND ClassId = ?"
 	stmt, err := db.Prepare(query)
 	if err != nil {
 		log.Println("Error preparing query:", err)
@@ -58,7 +55,7 @@ func (attendance *Attendance) update(db *sql.DB) error {
 	}
 	defer stmt.Close()
 
-	res, err := stmt.Exec(attendance.Status, attendance.Student.Id, attendance.ClassID)
+	res, err := stmt.Exec(attendance.Status, time.Now(), attendance.Student.Id, attendance.ClassID)
 	if err != nil {
 		log.Println("Error executing query:", err)
 		return err
