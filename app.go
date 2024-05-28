@@ -31,10 +31,9 @@ func (a *App) Initialize() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	a.DB.SetConnMaxLifetime(0)
-	a.DB.SetMaxOpenConns(10)
-	a.DB.SetMaxIdleConns(10)
+	a.DB.SetMaxOpenConns(0)
+	a.DB.SetMaxIdleConns(0)
 
 	a.Router = mux.NewRouter()
 
@@ -61,7 +60,7 @@ func (a *App) Run(addr string) {
 
 func (a *App) initializeRoutes() {
 	a.Router.Handle("/api/device/check", a.deviceAuthMiddleware(http.HandlerFunc(a.checkDevice))).Methods("GET")
-	a.Router.Handle("/api/device/upload", a.deviceAuthMiddleware(http.HandlerFunc(a.uploadImage))).Methods("POST")
+	a.Router.Handle("/api/device/upload", a.deviceAuthMiddleware(http.HandlerFunc(a.uploadImage)))
 	a.Router.HandleFunc("/api/web/login", a.loginHandler).Methods("POST")
 
 	a.Router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -81,6 +80,7 @@ func (a *App) initializeRoutes() {
 }
 func (a *App) deviceAuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
 		device := Device{}
 		device.Mac = r.Header.Get("X-MAC-ADDRESS")
 		key := r.Header.Get("X-API-KEY")
@@ -100,12 +100,11 @@ func (a *App) deviceAuthMiddleware(next http.Handler) http.Handler {
 			}
 			return
 		}
-
 		if device.Key != key {
 			http.Error(w, "Invalid API key", http.StatusUnauthorized)
 			return
 		}
-
+		log.Println(device)
 		ctx := context.WithValue(r.Context(), "device", device)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
@@ -184,14 +183,13 @@ func (a *App) uploadImage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Device information not found", http.StatusInternalServerError)
 		return
 	}
-	err := r.ParseMultipartForm(10 << 20) // 10 MB maximum file size
+	err := r.ParseMultipartForm(10 << 20)
 	if err != nil {
 		fmt.Println("Error parsing form:", err)
 		http.Error(w, "Error parsing form", http.StatusBadRequest)
 		return
 	}
 
-	// Get the file from the form data
 	file, handler, err := r.FormFile("image")
 	if err != nil {
 		fmt.Println("Error retrieving file:", err)
@@ -200,19 +198,17 @@ func (a *App) uploadImage(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	// Create a new file on the server to store the uploaded image
 	f, err := os.OpenFile("./uploads/"+handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
-		fmt.Println("Error creating file:", err)
+		log.Println("Error creating file:", err)
 		http.Error(w, "Error creating file", http.StatusInternalServerError)
 		return
 	}
 	defer f.Close()
 
-	// Copy the uploaded file to the new file on the server
 	_, err = io.Copy(f, file)
 	if err != nil {
-		fmt.Println("Error copying file:", err)
+		log.Println("Error copying file:", err)
 		http.Error(w, "Error copying file", http.StatusInternalServerError)
 		return
 	}
