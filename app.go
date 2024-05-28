@@ -64,10 +64,15 @@ func (a *App) initializeRoutes() {
 	a.Router.Handle("/api/device/upload", a.deviceAuthMiddleware(http.HandlerFunc(a.uploadImage)))
 
 	a.Router.HandleFunc("/api/web/login", a.loginHandler).Methods("POST")
+
 	a.Router.Handle("/api/web/classes", a.userAuthMiddleware(http.HandlerFunc(a.getClassesByCourseID))).Methods("GET")
 	a.Router.Handle("/api/web/courses", a.userAuthMiddleware(http.HandlerFunc(a.getCoursesByTeacherID))).Methods("GET")
 	a.Router.Handle("/api/web/groups", a.userAuthMiddleware(http.HandlerFunc(a.getAllGroups))).Methods("GET")
-	a.Router.Handle("/api/web/groups/{courseID}", a.userAuthMiddleware(http.HandlerFunc(a.getAttendanceByCourseID))).Methods("GET")
+	a.Router.Handle("/api/web/groups/by_course", a.userAuthMiddleware(http.HandlerFunc(a.getGroupsByCourseID))).Methods("GET")
+
+	a.Router.Handle("/api/web/attendance/by_class", a.userAuthMiddleware(http.HandlerFunc(a.getAttendencesByClassID))).Methods("GET")
+	a.Router.Handle("/api/web/attendance/by_course", a.userAuthMiddleware(http.HandlerFunc(a.getAttendanceByCourseID))).Methods("GET")
+
 	a.Router.Handle("/api/web/attendance/update", a.userAuthMiddleware(http.HandlerFunc(a.updateAttendanceStatus))).Methods("POST")
 
 	a.Router.Handle("/api/web/course/create", a.userAuthMiddleware(http.HandlerFunc(a.createCourse))).Methods("POST")
@@ -92,6 +97,10 @@ func (a *App) initializeRoutes() {
 
 	a.Router.Handle("/classes", a.userAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./platform/classes.html")
+	})))
+
+	a.Router.Handle("/attendance/edit", a.userAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./platform/updateAttendance.html")
 	})))
 
 	a.Router.HandleFunc("/logout", a.logoutHandler)
@@ -316,29 +325,10 @@ func (a *App) getAllGroups(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) getAttendencesByClassID(w http.ResponseWriter, r *http.Request) {
-	session, err := a.Store.Get(r, "aas-user")
+	classID, err := strconv.Atoi(r.URL.Query().Get("classID"))
 	if err != nil {
-		http.Error(w, "Failed to get session", http.StatusInternalServerError)
-		log.Println("Error retrieving session:", err)
-		return
+		http.Error(w, "Invalid classID", http.StatusBadRequest)
 	}
-
-	authenticated, ok := session.Values["authenticated"].(bool)
-	if !ok || !authenticated {
-		http.Error(w, "Forbidden", http.StatusForbidden)
-		log.Println("User not authenticated")
-		return
-	}
-
-	vars := mux.Vars(r)
-	classIDStr := vars["class_id"]
-	classID, err := strconv.Atoi(classIDStr)
-	if err != nil {
-		http.Error(w, "Invalid class ID", http.StatusBadRequest)
-		log.Println("Invalid class ID:", err)
-		return
-	}
-
 	class := Class{Id: classID}
 
 	err = class.getAttendences(a.DB)
@@ -358,8 +348,10 @@ func (a *App) getAttendencesByClassID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) getClassesByCourseID(w http.ResponseWriter, r *http.Request) {
-	courseID := r.URL.Query().Get("courseID")
-
+	courseID, err := strconv.Atoi(r.URL.Query().Get("courseID"))
+	if err != nil {
+		http.Error(w, "Invalid courseID", http.StatusBadRequest)
+	}
 	classes, err := getClassesByCourseID(a.DB, courseID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -373,7 +365,11 @@ func (a *App) getClassesByCourseID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) getGroupsByCourseID(w http.ResponseWriter, r *http.Request) {
-	courseID := r.URL.Query().Get("courseID")
+	courseID, err := strconv.Atoi(r.URL.Query().Get("courseID"))
+	if err != nil {
+		http.Error(w, "Invalid courseID", http.StatusBadRequest)
+		return
+	}
 
 	groups, err := getGroupsByCourseID(a.DB, courseID)
 	if err != nil {
@@ -388,7 +384,10 @@ func (a *App) getGroupsByCourseID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) getAttendanceByCourseID(w http.ResponseWriter, r *http.Request) {
-	courseID := r.URL.Query().Get("courseID")
+	courseID, err := strconv.Atoi(r.URL.Query().Get("courseID"))
+	if err != nil {
+		http.Error(w, "Invalid courseID", http.StatusBadRequest)
+	}
 
 	attendance, err := getAttendanceByCourse(a.DB, courseID)
 	if err != nil {
@@ -403,42 +402,22 @@ func (a *App) getAttendanceByCourseID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) updateAttendanceStatus(w http.ResponseWriter, r *http.Request) {
-	var input struct {
-		StudentID int `json:"student_id"`
-		Status    int `json:"status"`
-	}
+	var attendance = Attendance{}
 
-	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&attendance); err != nil {
 		http.Error(w, "Invalid input", http.StatusBadRequest)
 		log.Println("Error decoding input:", err)
 		return
 	}
 
-	if input.Status < 0 || input.Status > 3 {
-		http.Error(w, "Invalid status value", http.StatusBadRequest)
-		log.Println("Invalid status value:", input.Status)
-		return
-	}
-
-	success, err := updateAttendance(a.DB, input.StudentID, input.Status)
+	err := attendance.update(a.DB)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Println("Error updating attendance status:", err)
 		return
 	}
 
-	if !success {
-		http.Error(w, "No attendance record updated", http.StatusNotFound)
-		log.Println("No attendance record updated for StudentID:", input.StudentID)
-		return
-	}
-
-	response := map[string]string{"message": "Attendance status updated successfully"}
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
-		log.Println("Error encoding response:", err)
-	}
+	w.WriteHeader(200)
 }
 
 func (a *App) createCourse(w http.ResponseWriter, r *http.Request) {

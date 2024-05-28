@@ -10,8 +10,8 @@ type Group struct {
 	ID string `json:"id"`
 }
 
-func getGroupsByCourseID(db *sql.DB, courseID string) ([]Group, error) {
-	query := fmt.Sprintf("SELECT GroupID FROM courses_groups_bridge WHERE CourseID = %s", courseID)
+func getGroupsByCourseID(db *sql.DB, courseID int) ([]Group, error) {
+	query := fmt.Sprintf("SELECT GroupID FROM `courses-groups-bridge` WHERE CourseID = %v", courseID)
 	rows, err := db.Query(query)
 	if err != nil {
 		log.Println("Error executing query:", err)
