@@ -62,6 +62,7 @@ header .dots {
 .sub-header img {
     width: auto;
     height: 7vh;
+    margin: 1rem;
 }
 
 .search-bar {

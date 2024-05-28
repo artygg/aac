@@ -1,0 +1,103 @@
+<script>
+    function chooseYear() {
+        let mylist = document.getElementById("groupInput");
+        let field = document.getElementById("groupOutput");
+        let option = mylist.options[mylist.selectedIndex].text;
+        if (field.value.includes(option)) {
+            field.value = field.value.replace(option + " ", "")
+        } else {
+            field.value += option + " ";
+        }
+        mylist.options[0].selected = 'selected';
+    }
+
+    function printDropdownOptions(array) {
+        for (let i = 0; i < array.length; i++) {
+            document.write("<option>" + array[i] + "</option>");
+        }
+
+    }
+
+    function typeNameOfTheCourse() {
+        let mylist = document.getElementById("courseNameInput");
+        let field = document.getElementById("courseNameOutput");
+        field.value = mylist.value;
+    }
+
+    function typeNameOfTheYear() {
+        let mylist = document.getElementById("yearNameInput");
+        let field = document.getElementById("yearNameOutput");
+        field.value = mylist.value;
+    }
+
+    function dateFunction() {
+        let startDate = document.getElementById("startDate");
+        let endDate = document.getElementById("endDate");
+        let text = document.getElementById("date");
+        text.value = "From " + startDate.value.toString() + " To " + endDate.value.toString();
+    }
+</script>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="css/start_new_course.css" type="text/css">
+    <title>New course</title>
+</head>
+<body>
+<header>
+    <div class="holder">
+        <img class="dots" src="img/dots.png" alt="dots">
+        <a href="">&larr; Go back</a>
+    </div>
+
+    <img class="logo" src="img/aas-logo.png" alt="logo">
+</header>
+<div class="main-part">
+    <h1>Add new course</h1>
+    <form>
+        <p>Name of the course</p>
+        <input type="text" class="input-big" id="courseNameInput" required oninput="typeNameOfTheCourse()">
+        <p>Year of the course</p>
+        <input type="text" class="input-big" id="yearNameInput" required oninput="typeNameOfTheYear()">
+        <div class="date-choice-container">
+            <div class="date-choice">
+                <p>Start date</p>
+                <p><input type="date" id="startDate" required oninput="dateFunction() "></p>
+            </div>
+            <div class="date-choice">
+                <p>End date</p>
+                <p><input type="date" id="endDate" required oninput="dateFunction()"></p>
+            </div>
+        </div>
+
+        <p>Choose groups</p>
+        <select id="groupInput" onchange="chooseYear()">
+            <option>Choose group</option>
+            <script>
+                printDropdownOptions(["option 1", "option 2", "option 3"])
+            </script>
+        </select>
+        <h2>Check your new course</h2>
+        <div class="checking-container">
+            <div class="checking">
+                <p>Course name</p>
+                <p><input type="text" id="courseNameOutput" required readonly></p>
+            </div>
+            <div class="checking">
+                <p>Year of the course</p>
+                <p><input type="text" id="yearNameOutput" required readonly></p>
+            </div>
+            <div class="checking">
+                <p>Course groups</p>
+                <p><input type="text" id="groupOutput" required readonly></p>
+            </div>
+        </div>
+        <p>Course date</p>
+        <p><input type="text" id="date" readonly required></p>
+        <button type="submit">Add the course</button>
+    </form>
+</div>
+</body>
+</html>
