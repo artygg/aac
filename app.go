@@ -1,5 +1,3 @@
-//app.go
-
 package main
 
 import (
@@ -12,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
@@ -62,6 +61,11 @@ func (a *App) initializeRoutes() {
 	a.Router.Handle("/api/device/check", a.deviceAuthMiddleware(http.HandlerFunc(a.checkDevice))).Methods("GET")
 	a.Router.Handle("/api/device/upload", a.deviceAuthMiddleware(http.HandlerFunc(a.uploadImage)))
 	a.Router.HandleFunc("/api/web/login", a.loginHandler).Methods("POST")
+
+	a.Router.HandleFunc("/api/web/classes/{courseID}", a.userAuthMiddleware(http.HandlerFunc(a.getClassesByCourseID))).Methods("GET")
+	a.Router.HandleFunc("/api/web/groups/{courseID}", a.userAuthMiddleware(http.HandlerFunc(a.getGroupsByCourseID))).Methods("GET")
+	a.Router.HandleFunc("/api/web/groups/{courseID}", a.userAuthMiddleware(http.HandlerFunc(a.getAttendanceByCourseID))).Methods("GET")
+	a.Router.HandleFunc("/api/web/attendance/update", a.userAuthMiddleware(http.HandlerFunc(a.updateAttendanceStatus))).Methods("POST")
 
 	a.Router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./platform/index.html")
@@ -131,7 +135,7 @@ func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := teacher.getCoursesByTeacher(a.DB); err != nil {
+	if err := teacher.getTeacher(a.DB); err != nil {
 		switch err {
 		case sql.ErrNoRows:
 			http.Error(w, "Invalid login", http.StatusUnauthorized)
@@ -228,8 +232,7 @@ func (a *App) protectedHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello, %s! Your user ID is %d. This is a protected route.", login, userID)
 }
 
-func (a *App) getCourses(w http.ResponseWriter, r *http.Request) {
-	// Get the session
+func (a *App) getCoursesByTeacherID(w http.ResponseWriter, r *http.Request) {
 	session, err := a.Store.Get(r, "aas-user")
 	if err != nil {
 		http.Error(w, "Failed to get session", http.StatusInternalServerError)
@@ -253,7 +256,7 @@ func (a *App) getCourses(w http.ResponseWriter, r *http.Request) {
 
 	teacher := Teacher{Id: teacherID}
 
-	err = teacher.getCoursesByTeacher(a.DB)
+	err = teacher.getCourses(a.DB)
 	if err != nil {
 		http.Error(w, "Failed to get courses", http.StatusInternalServerError)
 		log.Println("Error retrieving courses:", err)
@@ -272,4 +275,163 @@ func (a *App) getCourses(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to encode courses", http.StatusInternalServerError)
 		log.Println("Error encoding courses to JSON:", err)
 	}
+}
+
+func (a *App) getAllGroups(w http.ResponseWriter, r *http.Request) {
+	session, err := a.Store.Get(r, "aas-user")
+	if err != nil {
+		http.Error(w, "Failed to get session", http.StatusInternalServerError)
+		log.Println("Error retrieving session:", err)
+		return
+	}
+
+	authenticated, ok := session.Values["authenticated"].(bool)
+	if !ok || !authenticated {
+		http.Error(w, "Forbidden", http.StatusForbidden)
+		log.Println("User not authenticated")
+		return
+	}
+
+	groupCluster := GroupCluster{}
+
+	err = groupCluster.getGroups(a.DB)
+	if err != nil {
+		http.Error(w, "Failed to get courses", http.StatusInternalServerError)
+		log.Println("Error retrieving courses:", err)
+		return
+	}
+
+	log.Printf("Retrieved courses: %+v\n", groupCluster.Groups)
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(groupCluster.Groups); err != nil {
+		http.Error(w, "Failed to encode courses", http.StatusInternalServerError)
+		log.Println("Error encoding courses to JSON:", err)
+	}
+}
+
+func (a *App) getAttendencesByClassID(w http.ResponseWriter, r *http.Request) {
+	session, err := a.Store.Get(r, "aas-user")
+	if err != nil {
+		http.Error(w, "Failed to get session", http.StatusInternalServerError)
+		log.Println("Error retrieving session:", err)
+		return
+	}
+
+	authenticated, ok := session.Values["authenticated"].(bool)
+	if !ok || !authenticated {
+		http.Error(w, "Forbidden", http.StatusForbidden)
+		log.Println("User not authenticated")
+		return
+	}
+
+	vars := mux.Vars(r)
+	classIDStr := vars["class_id"]
+	classID, err := strconv.Atoi(classIDStr)
+	if err != nil {
+		http.Error(w, "Invalid class ID", http.StatusBadRequest)
+		log.Println("Invalid class ID:", err)
+		return
+	}
+
+	class := Class{Id: classID}
+
+	err = class.getAttendences(a.DB)
+	if err != nil {
+		http.Error(w, "Failed to get attendances", http.StatusInternalServerError)
+		log.Println("Error retrieving attendances:", err)
+		return
+	}
+
+	log.Printf("Retrieved attendances: %+v\n", class.Attendances)
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(class.Attendances); err != nil {
+		http.Error(w, "Failed to encode attendances", http.StatusInternalServerError)
+		log.Println("Error encoding attendances to JSON:", err)
+	}
+}
+
+func (a *App) getClassesByCourseID(w http.ResponseWriter, r *http.Request) {
+	courseID := r.URL.Query().Get("courseID")
+
+	classes, err := getClassesByCourseID(a.DB, courseID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(classes); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func (a *App) getGroupsByCourseID(w http.ResponseWriter, r *http.Request) {
+	courseID := r.URL.Query().Get("courseID")
+
+	groups, err := getGroupsByCourseID(a.DB, courseID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(groups); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func (a *App) getAttendanceByCourseID(w http.ResponseWriter, r *http.Request) {
+	courseID := r.URL.Query().Get("courseID")
+
+	attendance, err := getAttendanceByCourse(a.DB, courseID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(attendance); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func (a *App) updateAttendanceStatus(w http.ResponseWriter, r *http.Request) {
+    var input struct {
+        StudentID int `json:"student_id"`
+        Status    int `json:"status"`
+    }
+
+    if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+        http.Error(w, "Invalid input", http.StatusBadRequest)
+        log.Println("Error decoding input:", err)
+        return
+    }
+
+    if input.Status < 0 || input.Status > 3 {
+        http.Error(w, "Invalid status value", http.StatusBadRequest)
+        log.Println("Invalid status value:", input.Status)
+        return
+    }
+
+    success, err := updateAttendance(a.DB, input.StudentID, input.Status)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        log.Println("Error updating attendance status:", err)
+        return
+    }
+
+    if !success {
+        http.Error(w, "No attendance record updated", http.StatusNotFound)
+        log.Println("No attendance record updated for StudentID:", input.StudentID)
+        return
+    }
+
+    response := map[string]string{"message": "Attendance status updated successfully"}
+    w.Header().Set("Content-Type", "application/json")
+    if err := json.NewEncoder(w).Encode(response); err != nil {
+        http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+        log.Println("Error encoding response:", err)
+    }
 }
