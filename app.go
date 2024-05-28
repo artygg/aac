@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"crypto/rand"
 	"database/sql"
@@ -8,8 +9,8 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
-	"os"
 	"regexp"
 	"strconv"
 	"time"
@@ -216,6 +217,18 @@ func (a *App) uploadImage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Device information not found", http.StatusInternalServerError)
 		return
 	}
+	//class, err := device.getClass(a.DB)
+	//if err != nil {
+	//	switch err {
+	//	case sql.ErrNoRows:
+	//		http.Error(w, "No Active Class for this room", http.StatusServiceUnavailable)
+	//	default:
+	//		log.Println(err)
+	//		http.Error(w, "Internal server error", http.StatusInternalServerError)
+	//	}
+	//	return
+	//}
+
 	err := r.ParseMultipartForm(10 << 20)
 	if err != nil {
 		fmt.Println("Error parsing form:", err)
@@ -231,23 +244,41 @@ func (a *App) uploadImage(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	f, err := os.OpenFile("./uploads/"+handler.Filename, os.O_WRONLY|os.O_CREATE, 0666)
-	if err != nil {
-		log.Println("Error creating file:", err)
-		http.Error(w, "Error creating file", http.StatusInternalServerError)
+	//f, err := os.OpenFile("./uploads/"+handler.Filename, os.O_RDWR|os.O_CREATE, 0666)
+	//if err != nil {
+	//	log.Println("Error creating file:", err)
+	//	http.Error(w, "Error creating file", http.StatusInternalServerError)
+	//	return
+	//}
+	//
+	//defer f.Close()
+	//
+	//_, err = io.Copy(f, file)
+	//if err != nil {
+	//	log.Println("Error copying file:", err)
+	//	http.Error(w, "Error copying file", http.StatusInternalServerError)
+	//	return
+	//}
+
+	resp, err := checkFace(file)
+
+	var student Student
+	if err := json.NewDecoder(resp.Body).Decode(&student); err != nil {
+		log.Fatalf("Failed to decode JSON response: %v", err)
+	}
+
+	if resp.StatusCode == 404 {
+		http.Error(w, "Student not found", http.StatusNotFound)
 		return
 	}
-	defer f.Close()
 
-	_, err = io.Copy(f, file)
-	if err != nil {
-		log.Println("Error copying file:", err)
-		http.Error(w, "Error copying file", http.StatusInternalServerError)
-		return
+	if err := json.NewDecoder(resp.Body).Decode(&student); err != nil {
+		log.Fatalf("Failed to decode JSON response: %v", err)
 	}
 
 	fmt.Fprintf(w, "File uploaded successfully: %s", handler.Filename)
 	fmt.Fprintf(w, "Device MAC: %s, Device Key: %s, Room: %s", device.Mac, device.Key, device.Room)
+
 }
 
 func (a *App) protectedHandler(w http.ResponseWriter, r *http.Request) {
@@ -496,4 +527,43 @@ func (a *App) registerTeacher(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(200)
+}
+
+func checkFace(f multipart.File) (*http.Response, error) {
+	req, err := http.NewRequest("POST", "http://localhost:8080/checkFace", nil)
+	if err != nil {
+		log.Println("Error creating HTTP request:", err)
+		return nil, err
+	}
+
+	// Create a new multipart writer for the request body
+	var requestBody bytes.Buffer
+	writer := multipart.NewWriter(&requestBody)
+
+	// Create a new form file field for the image
+	fileField, err := writer.CreateFormFile("image", "face.jpg")
+	if err != nil {
+		log.Println("Error creating form file field:", err)
+		return nil, err
+	}
+
+	// Copy the image data to the form file field
+	_, err = io.Copy(fileField, f)
+	if err != nil {
+		log.Println("Error copying image data:", err)
+		return nil, err
+	}
+
+	writer.Close()
+
+	req.Body = io.NopCloser(&requestBody)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error sending request:", err)
+		return nil, err
+	}
+	defer resp.Body.Close()
+	return resp, nil
 }
