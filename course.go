@@ -4,17 +4,12 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 )
 
 type Course struct {
 	ID        int    `json:"id"`
 	Name      string `json:"name"`
 	TeacherID int    `json:"teacher_id"`
-}
-
-type Group struct {
-	ID string `json:"id"`
 }
 
 func (course *Course) getCourse(db *sql.DB) error {
@@ -36,4 +31,3 @@ func getCourse(db *sql.DB, id int) (*Course, error) {
 
 	return &course, nil
 }
-

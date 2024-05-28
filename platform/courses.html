@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get Courses by Teacher ID</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        input {
+            display: block;
+            margin-bottom: 10px;
+            padding: 10px;
+            width: 100%;
+        }
+        button {
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        .results {
+            margin-top: 20px;
+        }
+        .results p {
+            margin: 0;
+            padding: 10px;
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Get Courses by Teacher ID</h1>
+    <input type="text" id="teacherID" placeholder="Enter Teacher ID">
+    <button onclick="getCourses()">Get Courses</button>
+    <div class="results" id="results"></div>
+</div>
+<script>
+    async function getCourses() {
+        const resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = '';
+
+        try {
+            const response = await fetch('/api/web/courses', {
+                method: 'GET',
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch courses');
+            }
+
+            const data = await response.json();
+
+            const userId = document.createElement('p');
+            userId.textContent = `User ID: ${data.user_id}`;
+            resultsDiv.appendChild(userId);
+
+            data.courses.forEach(course => {
+                const courseElement = document.createElement('p');
+                courseElement.textContent = `Course ID: ${course.id}, Name: ${course.name}, Code: ${course.code}`;
+                resultsDiv.appendChild(courseElement);
+            });
+        } catch (error) {
+            resultsDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+        }
+    }
+</script>
+</body>
+</html>

@@ -52,7 +52,7 @@ func getClassesByCourseID(db *sql.DB, courseID string) ([]Class, error) {
 
 	for rows.Next() {
 		var class Class
-		if err := rows.Scan(&class.ID, &class.CourseID, &class.Room, &class.StartTime, &class.EndTime); err != nil {
+		if err := rows.Scan(&class.Id, &class.CourseId, &class.Room, &class.StartTime, &class.EndTime); err != nil {
 			log.Println("Error scanning row:", err)
 			return nil, fmt.Errorf("failed to scan row: %w", err)
 		}

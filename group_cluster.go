@@ -19,7 +19,7 @@ func (groupCluster *GroupCluster) getGroups(db *sql.DB) error {
 	}
 	for rows.Next() {
 		var group Group
-		err := rows.Scan(&group.Id)
+		err := rows.Scan(&group.ID)
 		if err != nil {
 			return err
 		}
