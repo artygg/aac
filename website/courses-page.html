@@ -16,6 +16,17 @@
             Your courses
         </h1>
     </div>
+    <div class="sub-header">
+        <div class="sub-header-element">
+            <button onclick="window.location.href='register.html'">Previous courses</button>
+        </div>
+        <div class="sub-header-element selected">
+            <button onclick="window.location.href='register.html'">Current courses</button>
+        </div>
+        <div class="sub-header-element">
+            <button onclick="window.location.href='register.html'">Upcoming courses</button>
+        </div>
+    </div>
     <div class="search-bar">
         <div class="search-bar-border">
             <input type="text" placeholder="      Search your courses">
@@ -46,10 +57,12 @@
     </div>
 
     <div class="new-course">
-        <a href=""><img src="img/white-plus.png" alt="plus"><p>Add new course</p></a>
+            <button id="button-inside" onclick="window.location.href='register.html'">
+                + Add new course
+            </button>
     </div>
-
 </div>
+
 <div class="footer">
     <p>Terms</p>
     <p>Privacy</p>
