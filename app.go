@@ -68,6 +68,8 @@ func (a *App) initializeRoutes() {
 	a.Router.HandleFunc("/api/web/groups/{courseID}", a.userAuthMiddleware(http.HandlerFunc(a.getAttendanceByCourseID))).Methods("GET")
 	a.Router.HandleFunc("/api/web/attendance/update", a.userAuthMiddleware(http.HandlerFunc(a.updateAttendanceStatus))).Methods("POST")
 
+	a.Router.HandleFunc("/api/web/course/create", a.userAuthMiddleware(http.HandlerFunc(a.createCourse))).Methods("POST")
+
 	a.Router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./platform/index.html")
 	})
@@ -438,4 +440,38 @@ func (a *App) updateAttendanceStatus(w http.ResponseWriter, r *http.Request) {
         http.Error(w, "Failed to encode response", http.StatusInternalServerError)
         log.Println("Error encoding response:", err)
     }
+}
+
+func (a *App) createCourse(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		Name      string   `json:"name"`
+		Year      int      `json:"year"`
+		StartDate string   `json:"start_date"`
+		EndDate   string   `json:"end_date"`
+		Groups    []string `json:"groups"`
+		TeacherID int      `json:"teacher_id"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		http.Error(w, "Invalid input", http.StatusBadRequest)
+		log.Println("Error decoding input:", err)
+		return
+	}
+
+	success, err := createCourse(a.DB, input.Name, input.Year, input.StartDate, input.EndDate, input.TeacherID, input.Groups)
+	if err != nil {
+		http.Error(w, "Failed to create course", http.StatusInternalServerError)
+		log.Println("Error creating course:", err)
+		return
+	}
+
+	response := map[string]string{
+		"message": "Course created successfully",
+		"success": fmt.Sprintf("%t", success),
+	}
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		log.Println("Error encoding response:", err)
+	}
 }
