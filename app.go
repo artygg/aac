@@ -11,10 +11,14 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
+	"regexp"
 
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
+
+	
 )
 
 type App struct {
@@ -69,6 +73,9 @@ func (a *App) initializeRoutes() {
 	a.Router.HandleFunc("/api/web/attendance/update", a.userAuthMiddleware(http.HandlerFunc(a.updateAttendanceStatus))).Methods("POST")
 
 	a.Router.HandleFunc("/api/web/course/create", a.userAuthMiddleware(http.HandlerFunc(a.createCourse))).Methods("POST")
+	a.Router.HandleFunc("/api/web/teacher/register", http.HandlerFunc(a.registerTeacher)).Methods("POST")
+	a.Router.HandleFunc("/api/web/teacher/register", a.userAuthMiddleware(http.HandlerFunc(a.createCourse))).Methods("POST")
+
 
 	a.Router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./platform/index.html")
@@ -444,12 +451,11 @@ func (a *App) updateAttendanceStatus(w http.ResponseWriter, r *http.Request) {
 
 func (a *App) createCourse(w http.ResponseWriter, r *http.Request) {
 	var input struct {
-		Name      string   `json:"name"`
-		Year      int      `json:"year"`
-		StartDate string   `json:"start_date"`
-		EndDate   string   `json:"end_date"`
+		Name      string `json:"name"`
+		Year      int    `json:"year"`
+		StartDate string `json:"start_date"`
+		EndDate   string `json:"end_date"`
 		Groups    []string `json:"groups"`
-		TeacherID int      `json:"teacher_id"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
@@ -458,7 +464,22 @@ func (a *App) createCourse(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	success, err := createCourse(a.DB, input.Name, input.Year, input.StartDate, input.EndDate, input.TeacherID, input.Groups)
+	startDate, err := time.Parse("2006-01-02", input.StartDate)
+	if err != nil {
+		http.Error(w, "Invalid start date format", http.StatusBadRequest)
+		log.Println("Error parsing start date:", err)
+		return
+	}
+	endDate, err := time.Parse("2006-01-02", input.EndDate)
+	if err != nil {
+		http.Error(w, "Invalid end date format", http.StatusBadRequest)
+		log.Println("Error parsing end date:", err)
+		return
+	}
+
+	teacherID := getTeacherIDFromSession(r) 
+
+	success, err := createCourse(a.DB, input.Name, input.Year, startDate, endDate, teacherID, input.Groups)
 	if err != nil {
 		http.Error(w, "Failed to create course", http.StatusInternalServerError)
 		log.Println("Error creating course:", err)
@@ -474,4 +495,49 @@ func (a *App) createCourse(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
 		log.Println("Error encoding response:", err)
 	}
+}
+
+
+func (a *App) registerTeacher(w http.ResponseWriter, r *http.Request) {
+    var input struct {
+        Email           string `json:"email"`
+        FirstName       string `json:"first_name"`
+        LastName        string `json:"last_name"`
+        Password        string `json:"password"`
+        RegistrationDate string `json:"registration_date"`
+    }
+
+    if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+        http.Error(w, "Invalid input", http.StatusBadRequest)
+        log.Println("Error decoding input:", err)
+        return
+    }
+
+    emailPattern := regexp.MustCompile(`^[^@]+@[^@]+\.[^@]{2,}$`)
+    if !emailPattern.MatchString(input.Email) {
+        http.Error(w, "Invalid email format", http.StatusBadRequest)
+        log.Println("Invalid email format:", input.Email)
+        return
+    }
+
+    if input.RegistrationDate == "" {
+        input.RegistrationDate = time.Now().Format("2006-01-02")
+    }
+
+    success, err := registerTeacher(a.DB, input.Email, input.FirstName, input.LastName, input.Password, input.RegistrationDate)
+    if err != nil {
+        http.Error(w, "Failed to register teacher", http.StatusInternalServerError)
+        log.Println("Error registering teacher:", err)
+        return
+    }
+
+    response := map[string]string{
+        "message": "Teacher registered successfully",
+        "success": fmt.Sprintf("%t", success),
+    }
+    w.Header().Set("Content-Type", "application/json")
+    if err := json.NewEncoder(w).Encode(response); err != nil {
+        http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+        log.Println("Error encoding response:", err)
+    }
 }

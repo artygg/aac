@@ -5,15 +5,20 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"encoding/json"
+	"net/http"
+	"time"
+
+	"github.com/gorilla/mux"
 )
 
 type Course struct {
-	ID        int    `json:"id"`
-	Name      string `json:"name"`
-	TeacherID int    `json:"teacher_id"`
-	StartDate string `json:"start_date"`
-	EndDate   string `json:"end_date"`
-	Year      int    `json:"year"`
+	ID          int       `json:"id"`
+	Name        string    `json:"name"`
+	Year        int       `json:"year"`
+	StartDate   time.Time `json:"start_date"`
+	EndDate     time.Time `json:"end_date"`
+	TeacherID   int       `json:"teacher_id"`
 }
 
 type Group struct {
@@ -40,48 +45,40 @@ func getCourse(db *sql.DB, id int) (*Course, error) {
 	return &course, nil
 }
 
-func createCourse(db *sql.DB, name string, year int, startDate, endDate string, teacherID int, groups []string) (bool, error) {
+func createCourse(db *sql.DB, name string, year int, startDate, endDate time.Time, teacherID int, groups []string) (bool, error) {
 	tx, err := db.Begin()
 	if err != nil {
-		log.Println("Error beginning transaction:", err)
-		return false, fmt.Errorf("failed to begin transaction: %w", err)
+		log.Println("Error starting transaction:", err)
+		return false, err
 	}
 
-	defer func() {
-		if err != nil {
-			tx.Rollback()
-		} else {
-			err = tx.Commit()
-			if err != nil {
-				log.Println("Error committing transaction:", err)
-			}
-		}
-	}()
-
-	query := `
-		INSERT INTO courses (Name, Year, StartDate, EndDate, TeacherID)
-		VALUES (?, ?, ?, ?, ?)`
+	query := `INSERT INTO courses (Name, Year, StartDate, EndDate, TeacherID) VALUES (?, ?, ?, ?, ?)`
 	res, err := tx.Exec(query, name, year, startDate, endDate, teacherID)
 	if err != nil {
+		tx.Rollback()
 		log.Println("Error inserting course:", err)
-		return false, fmt.Errorf("failed to insert course: %w", err)
+		return false, err
 	}
 
 	courseID, err := res.LastInsertId()
 	if err != nil {
+		tx.Rollback()
 		log.Println("Error getting last insert ID:", err)
-		return false, fmt.Errorf("failed to get last insert ID: %w", err)
+		return false, err
 	}
 
 	for _, groupID := range groups {
-		groupQuery := `
-			INSERT INTO courses_groups_bridge (Courseid, GroupID)
-			VALUES (?, ?)`
-		_, err = tx.Exec(groupQuery, courseID, groupID)
-		if err != nil {
+		query := `INSERT INTO courses_groups_bridge (Courseid, GroupID) VALUES (?, ?)`
+		if _, err := tx.Exec(query, courseID, groupID); err != nil {
+			tx.Rollback()
 			log.Println("Error inserting into courses_groups_bridge:", err)
-			return false, fmt.Errorf("failed to insert into courses_groups_bridge: %w", err)
+			return false, err
 		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		log.Println("Error committing transaction:", err)
+		return false, err
 	}
 
 	return true, nil
