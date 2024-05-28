@@ -5,24 +5,16 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"encoding/json"
-	"net/http"
 	"time"
-
-	"github.com/gorilla/mux"
 )
 
 type Course struct {
-	ID          int       `json:"id"`
-	Name        string    `json:"name"`
-	Year        int       `json:"year"`
-	StartDate   time.Time `json:"start_date"`
-	EndDate     time.Time `json:"end_date"`
-	TeacherID   int       `json:"teacher_id"`
-}
-
-type Group struct {
-	ID string `json:"id"`
+	ID        int       `json:"id"`
+	Name      string    `json:"name"`
+	Year      int       `json:"year"`
+	StartDate time.Time `json:"start_date"`
+	EndDate   time.Time `json:"end_date"`
+	TeacherID int       `json:"teacher_id"`
 }
 
 func (course *Course) getCourse(db *sql.DB) error {

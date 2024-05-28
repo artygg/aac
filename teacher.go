@@ -5,6 +5,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"log"
 )
 
 type Teacher struct {
@@ -40,21 +41,21 @@ func (teacher *Teacher) getTeacher(db *sql.DB) error {
 }
 
 func registerTeacher(db *sql.DB, email, firstName, lastName, password, registrationDate string) (bool, error) {
-    query := `
+	query := `
         INSERT INTO teachers (email, firstName, lastName, password, registrationDate)
         VALUES (?, ?, ?, ?, ?)`
-    stmt, err := db.Prepare(query)
-    if err != nil {
-        log.Println("Error preparing query:", err)
-        return false, fmt.Errorf("failed to prepare query: %w", err)
-    }
-    defer stmt.Close()
+	stmt, err := db.Prepare(query)
+	if err != nil {
+		log.Println("Error preparing query:", err)
+		return false, fmt.Errorf("failed to prepare query: %w", err)
+	}
+	defer stmt.Close()
 
-    _, err = stmt.Exec(email, firstName, lastName, password, registrationDate)
-    if err != nil {
-        log.Println("Error executing query:", err)
-        return false, fmt.Errorf("failed to execute query: %w", err)
-    }
+	_, err = stmt.Exec(email, firstName, lastName, password, registrationDate)
+	if err != nil {
+		log.Println("Error executing query:", err)
+		return false, fmt.Errorf("failed to execute query: %w", err)
+	}
 
-    return true, nil
+	return true, nil
 }
