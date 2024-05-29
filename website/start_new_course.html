@@ -1,5 +1,5 @@
 <script>
-    function chooseYear() {
+    function chooseGroup() {
         let mylist = document.getElementById("groupInput");
         let field = document.getElementById("groupOutput");
         let option = mylist.options[mylist.selectedIndex].text;
@@ -73,7 +73,7 @@
         </div>
 
         <p>Choose groups</p>
-        <select id="groupInput" onchange="chooseYear()">
+        <select id="groupInput" onchange="chooseGroup()">
             <option>Choose group</option>
             <script>
                 printDropdownOptions(["option 1", "option 2", "option 3"])
@@ -98,6 +98,14 @@
         <p><input type="text" id="date" readonly required></p>
         <button type="submit">Add the course</button>
     </form>
+
+</div>
+<div id="footer">
+    <p>Terms</p>
+    <p>Privacy</p>
+    <p>Docs</p>
+    <p>Contact AAS support</p>
+    <p>Manage cookies</p>
 </div>
 </body>
 </html>
