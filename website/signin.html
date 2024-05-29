@@ -13,7 +13,7 @@
         <div class="container-header">
             <h2>Sing in to AAS</h2>
         </div>
-        <form class="container-main">
+        <form class="container-main" id="loginForm">
             <label for="email">Email address</label>
             <input type="email" name="email" id="email">
             <div class="password-container">
@@ -22,6 +22,7 @@
             </div>
             <input type="password" name="password" id="password">
             <input type="submit" value="Sign in" name="sign_in" id="sign_in" class="test">
+            <div id="message" class="error"></div>
         </form>
         <div class="container-footer">
             <p>New to AAS?</p>
@@ -35,5 +36,37 @@
         <p>Contact AAS support</p>
         <p>Manage cookies</p>
     </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            var login = document.getElementById('email').value;
+            var password = document.getElementById('password').value;
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/api/web/login', true);
+            xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    var status = xhr.status;
+                    if (status === 0 || (status >= 200 && status < 400)) {
+                        // The request was successful
+                        document.getElementById('message').textContent = 'Login successful!';
+
+                    } else {
+                        // The request failed
+                        document.getElementById('message').textContent = 'Invalid login or password';
+                    }
+                }
+            };
+
+            xhr.send(JSON.stringify({
+                email: login,
+                password: password
+            }));
+        });
+    </script>
 </body>
 </html>
