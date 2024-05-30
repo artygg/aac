@@ -37,7 +37,6 @@
             <div class="course">
                 <div class="color"></div>
                 <div class="link-to-the-course"><a href="">Course name</a></div>
-
                 <div class="dropdown">
                     <p>Teacher</p>
                 </div>
@@ -47,22 +46,18 @@
             <div class="course">
                 <div class="color"></div>
                 <div class="link-to-the-course"><a href="">Course name</a></div>
-
                 <div class="dropdown">
                     <p>Teacher</p>
                 </div>
-
             </div>
         </div>
     </div>
-
     <div class="new-course">
             <button id="button-inside" onclick="window.location.href='register.html'">
                 + Add new course
             </button>
     </div>
 </div>
-
 <div class="footer">
     <p>Terms</p>
     <p>Privacy</p>
@@ -70,5 +65,13 @@
     <p>Contact AAS support</p>
     <p>Manage cookies</p>
 </div>
+
+<script>
+    fetch('/api/web/login')
+        .then(res => {
+            console.log(res);
+        })
+</script>
+
 </body>
 </html>
