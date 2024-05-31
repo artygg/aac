@@ -29,7 +29,7 @@ type App struct {
 func (a *App) Initialize() {
 	var err error
 
-	a.DB, err = sql.Open("mysql", "root:@tcp(127.0.0.1)/db")
+	a.DB, err = sql.Open("mysql", "u420565238_aas:^5qJ2ZVRgEO3@tcp(109.106.246.151)/u420565238_aas")
 	if err != nil {
 		log.Fatal(err)
 	}
