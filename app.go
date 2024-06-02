@@ -113,6 +113,10 @@ func (a *App) initializeClient() {
 		http.ServeFile(w, r, "./website/start_new_class.html")
 	})))
 
+	a.Router.Handle("/attendance/by_course", a.userAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./website/course-attendance-statistics.html")
+	})))
+
 	a.Router.HandleFunc("/logout", a.logoutHandler)
 }
 

@@ -158,11 +158,11 @@
     <img class="logo" src="img/aas-logo.png" alt="logo">
 </header>
 <div class="main-part">
-    <div class="main-header">
-        <h1>
-            Course name
-        </h1>
-    </div>
+        <div class="main-header">
+            <h1>
+                Course name
+            </h1>
+        </div>
     <div class="navigation">
         <div class="navigation-element">
             <img src="img/marks.png">
@@ -174,7 +174,7 @@
         </div>
         <div class="navigation-element">
             <img src="img/statistics.png">
-            <a href=""><h2>Watch statistics</h2></a>
+            <a href='' id="statistics-link"><h2>Watch statistics</h2></a>
         </div>
     </div>
     <div class="recent">
@@ -194,6 +194,28 @@
 <script>
     const urlParams = new URLSearchParams(window.location.search);
     const courseID = urlParams.get('courseID');
+
+    const statisticsLink = document.getElementById('statistics-link');
+    statisticsLink.href = `/attendance/by_course?courseID=${courseID}`;
+
+    fetch(`/api/web/courses`)
+        .then(res => res.json())
+        .then(data => {
+            const courses = data.courses;
+
+            courses.forEach(course => {
+                if (course.id == courseID) {
+                    const mainHeader = document.getElementsByTagName('h1')
+                    console.log("Course: ",course.name)
+                    const mainHeaderElement = document.querySelector('.main-header');
+                    const h1Element = mainHeaderElement.querySelector('h1');
+                    h1Element.innerText = course.name;
+                }
+            })
+        })
+        .catch(error => console.error('Error fetching courses:', error));
+
+
 
     fetch(`/api/web/classes?courseID=${courseID}`)
         .then(response => response.json())

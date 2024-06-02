@@ -5,6 +5,116 @@
     <title>Course Attendance</title>
     <link rel="stylesheet" href="css/course-attendance-statistics.css" type="text/css">
 </head>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .main-part {
+        margin: 5rem;
+    }
+
+    .main-header {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 1rem;
+        font-size: 2rem;
+    }
+
+    .main-header h1 {
+        font-weight: normal;
+        color: #003787
+    }
+
+    header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 2rem
+    }
+
+    header .logo {
+        max-width: 7vw;
+        width: auto;
+        display: block;
+    }
+
+    header .dots {
+        width: 3vw;
+        height: 3vw;
+    }
+
+    .holder {
+        display: flex;
+    }
+
+    .holder a {
+        display: flex;
+        align-items: end;
+        padding-left: 3rem;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px auto;
+        font-size: 18px;
+        text-align: center;
+        border: 1px solid #003787;
+    }
+
+    th, td {
+        padding: 8px 10px;
+        border: 2px solid #003787;
+    }
+
+    thead tr {
+        color: #003787;
+    }
+
+    thead tr th {
+        font-weight: normal;
+    }
+
+    .sub-header {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        color: #003787;
+    }
+
+    .search-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 5vh 11.5rem 5vh 5vh;
+    }
+
+    .search-bar p {
+        padding-left: 10vw ;
+        color: #00000096;
+    }
+
+    .search-bar-border {
+        border: lightgray 0.1rem solid;
+    }
+
+    .search-bar input {
+        border: none;
+        height: 5vh;
+        width: 20vw;
+    }
+
+    .sub-header img {
+        width: auto;
+        height: 7vh;
+    }
+</style>
 <body>
     <header>
         <div class="holder">
@@ -32,7 +142,7 @@
                 <th>Student ID</th>
                 <th>First name</th>
                 <th>Last name</th>
-                <th>Presence</th>
+                <th>Status</th>
             </tr>
             </thead>
             <tbody>
@@ -40,17 +150,61 @@
                 <td>5357608</td>
                 <td>Fjodor</td>
                 <td>Smorodins</td>
-                <td>100%</td>
-            </tr>
-            <tr>
-                <td>5357608</td>
-                <td>Fjodor</td>
-                <td>Smorodins</td>
-                <td>10%</td>
+                <td>Present</td>
             </tr>
             </tbody>
         </table>
     </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const courseID = urlParams.get('courseID');
+
+        fetch(`/api/web/courses`)
+            .then(res => res.json())
+            .then(data => {
+                const courses = data.courses;
+
+                courses.forEach(course => {
+                    if (course.id == courseID) {
+                        const mainHeader = document.getElementsByTagName('h1')
+                        console.log("Course: ",course.name)
+                        const mainHeaderElement = document.querySelector('.main-header');
+                        const h1Element = mainHeaderElement.querySelector('h1');
+                        h1Element.innerText = course.name;
+                    }
+                })
+            })
+            .catch(error => console.error('Error showing course name:', error));
+
+        fetch(`/api/web/attendance/by_course?courseID=${courseID}`)
+            .then(res => res.json())
+            .then(data => {
+                const tbody = document.querySelector('tbody');
+                data.forEach(entry => {
+                    const tr = document.createElement('tr');
+
+                    const studentIdCell = document.createElement('td');
+                    studentIdCell.textContent = entry.student.id;
+                    tr.appendChild(studentIdCell);
+
+                    const firstNameCell = document.createElement('td');
+                    firstNameCell.textContent = entry.student.first_name;
+                    tr.appendChild(firstNameCell);
+
+                    const lastNameCell = document.createElement('td');
+                    lastNameCell.textContent = entry.student.last_name;
+                    tr.appendChild(lastNameCell);
+
+                    const presenceCell = document.createElement('td');
+                    presenceCell.textContent = entry.status === '1' ? 'Present' : 'Absent';
+                    tr.appendChild(presenceCell);
+
+                    tbody.appendChild(tr);
+                })
+            })
+            .catch(error => console.error('Error fetching attendance by course:', error));
+    </script>
 </body>
 </html>
 

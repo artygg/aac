@@ -162,7 +162,7 @@
     fetch('/api/web/groups')
         .then(response => response.json())
         .then(data => {
-            const groupIds = data.map(group => group.id); // Assuming the API returns an array of group objects with an 'id' field
+            const groupIds = data.map(group => group.id);
             printDropdownOptions(groupIds);
         })
         .catch(error => console.error('Error fetching groups:', error));
