@@ -5,6 +5,149 @@
     <title>Title</title>
     <link rel="stylesheet" href="css/classes-page.css" type="text/css">
 </head>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .main-part {
+        margin: 5rem;
+    }
+
+    header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 2rem
+    }
+
+    header .logo {
+        max-width: 7vw;
+        width: auto;
+        display: block;
+    }
+
+    header .dots {
+        width: 3vw;
+        height: 3vw;
+    }
+
+    .holder {
+        display: flex;
+    }
+
+    .holder a {
+        display: flex;
+        align-items: end;
+        padding-left: 3rem;
+    }
+
+    .main-header {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 1rem;
+        font-size: 2rem;
+    }
+
+    .main-header h1 {
+        font-weight: normal;
+        color: #003787
+    }
+
+    .navigation {
+        display: flex;
+        align-items: center;
+        border: #003787 0.1rem solid;
+        border-left: none;
+    }
+
+    .navigation-element {
+        display: flex;
+        width: 33.3%;
+        justify-content: center;
+        padding: 1.5rem;
+        border-left: #003787 0.1rem solid;
+    }
+
+    .navigation-element img {
+        height: 2rem;
+        width: auto;
+        margin-right: 1rem;
+    }
+    .navigation-element a{
+        text-decoration: none;
+        color: black;
+    }
+    .recent{
+        display: flex;
+        margin-left: 11.5rem;
+        margin-top: 3rem;
+        color: grey;
+    }
+    .classes {
+        padding-top: 2rem;
+    }
+
+    .class-container {
+        display: flex;
+        justify-content: center;
+        padding-top: 0.5rem;
+    }
+
+    .class {
+        display: flex;
+        border: #C56106 0.1rem solid;
+    }
+
+    .color {
+        display: flex;
+        background-color: #C56106;
+        width: 4vh;
+        height: 10vh;
+    }
+
+    .link-to-the-class-info {
+        display: flex;
+        align-items: center;
+        padding-left: 1rem;
+        width: 60vw;
+        height: 10vh;
+        border-left: #C56106 0.1rem solid;
+    }
+
+    .link-to-the-class-info a {
+        text-decoration: none;
+        color: black;
+        font-size: 1.5rem;
+    }
+
+    .date {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 15vh;
+        height: 10vh;
+        border-left: #C56106 0.1rem solid;
+    }
+
+    .footer {
+        display: flex;
+        justify-content: center;
+        padding: 2rem;
+        gap: 1rem;
+        bottom: 0;
+        width: 100%;
+        color: #00000078;
+    }
+
+    .date p {
+        width:90%;
+    }
+</style>
 <body>
 <header>
     <div class="holder">
@@ -27,7 +170,7 @@
         </div>
         <div class="navigation-element">
             <img src="img/plus.png">
-            <a href=""><h2>Start new class</h2></a>
+            <a href="class/create"><h2>Start new class</h2></a>
         </div>
         <div class="navigation-element">
             <img src="img/statistics.png">
@@ -38,29 +181,7 @@
         <p>Recent classes</p>
     </div>
     <div class="classes">
-        <div class="class-container">
-            <div class="class">
-                <div class="color"></div>
-                <div class="link-to-the-class-info"><a href="">Class name</a></div>
-
-                <div class="date">
-                    <p>22/04/2022</p>
-                </div>
-            </div>
-        </div>
-        <div class="class-container">
-            <div class="class">
-                <div class="color"></div>
-                <div class="link-to-the-class-info"><a href="">Class name</a></div>
-
-                <div class="date">
-                    <p>24/02/2022</p>
-                </div>
-
-            </div>
-        </div>
     </div>
-
 </div>
 <div class="footer">
     <p>Terms</p>
@@ -69,5 +190,46 @@
     <p>Contact AAS support</p>
     <p>Manage cookies</p>
 </div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const courseID = urlParams.get('courseID');
+
+    fetch(`/api/web/classes?courseID=${courseID}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log(data)
+            const classesContainer = document.querySelector('.classes');
+            data.forEach(classInstance => {
+                const classContainer = document.createElement('div');
+                classContainer.classList.add('class-container');
+
+                const classElement = document.createElement('div');
+                classElement.classList.add('class');
+
+                const colorDiv = document.createElement('div');
+                colorDiv.classList.add('color');
+                const linkToClass = document.createElement('div');
+                linkToClass.classList.add('link-to-the-class-info');
+                const link = document.createElement('a');
+                link.setAttribute('href', ``);
+                link.textContent = classInstance.id;
+                const startDate = document.createElement('div');
+                startDate.classList.add('date');
+                const startDateText = document.createElement('p');
+                startDateText.textContent = classInstance.starttime;
+
+                startDate.appendChild(startDateText)
+                linkToClass.appendChild(link)
+                classElement.appendChild(colorDiv)
+                classElement.appendChild(linkToClass)
+                classElement.appendChild(startDate)
+                classContainer.appendChild(classElement);
+                classesContainer.appendChild(classContainer);
+            })
+        })
+        .catch(error => console.error('Error fetching classes:', error));
+</script>
+
 </body>
 </html>

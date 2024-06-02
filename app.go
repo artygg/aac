@@ -98,7 +98,7 @@ func (a *App) initializeClient() {
 	})))
 
 	a.Router.Handle("/classes", a.userAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./platform/classes.html")
+		http.ServeFile(w, r, "./website/classes-page.html")
 	})))
 
 	a.Router.Handle("/attendance/edit", a.userAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -107,6 +107,10 @@ func (a *App) initializeClient() {
 
 	a.Router.Handle("/course/create", a.userAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./website/start_new_course.html")
+	})))
+
+	a.Router.Handle("/class/create", a.userAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./website/start_new_class.html")
 	})))
 
 	a.Router.HandleFunc("/logout", a.logoutHandler)
@@ -387,6 +391,9 @@ func (a *App) getAttendencesByClassID(w http.ResponseWriter, r *http.Request) {
 
 func (a *App) getClassesByCourseID(w http.ResponseWriter, r *http.Request) {
 	courseID, err := strconv.Atoi(r.URL.Query().Get("courseID"))
+	log.Println("Full URL:", r.URL.String())
+	log.Println("Raw Query:", r.URL.RawQuery)
+	log.Println("Course ID:", r.URL.Query().Get("courseID"))
 	if err != nil {
 		http.Error(w, "Invalid courseID", http.StatusBadRequest)
 	}

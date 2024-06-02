@@ -228,6 +228,7 @@
     fetch('/api/web/courses')
         .then(response => response.json())
         .then(data => {
+            console.log(data)
             const courses = data.courses;
             const coursesContainer = document.querySelector('.courses');
 
@@ -235,6 +236,8 @@
             coursesContainer.innerHTML = '';
 
             courses.forEach(course => {
+                console.log('Course: ', course.id)
+
                 const courseContainer = document.createElement('div');
                 courseContainer.classList.add('course-container');
 
@@ -246,7 +249,7 @@
                 const linkToCourse = document.createElement('div');
                 linkToCourse.classList.add('link-to-the-course');
                 const link = document.createElement('a');
-                link.setAttribute('href', '');
+                link.setAttribute('href', `/classes?courseID=${course.id}`);
                 link.textContent = course.name;
                 const dropdown = document.createElement('div');
                 dropdown.classList.add('dropdown');
