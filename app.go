@@ -83,7 +83,7 @@ func (a *App) initializeRoutes() {
 
 func (a *App) initializeClient() {
 	a.Router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./platform/index.html")
+		http.ServeFile(w, r, "./website/index.html")
 	})
 
 	a.Router.Handle("/courses", a.userAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -93,9 +93,8 @@ func (a *App) initializeClient() {
 	a.Router.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./website/signin.html")
 	})
-
 	a.Router.Handle("/protected", a.userAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./platform/protected.html")
+		http.ServeFile(w, r, "./website/protected.html")
 	})))
 
 	a.Router.Handle("/classes", a.userAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -107,7 +106,7 @@ func (a *App) initializeClient() {
 	})))
 
 	a.Router.Handle("/course/create", a.userAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./platform/newcourse.html")
+		http.ServeFile(w, r, "./website/start_new_course.html")
 	})))
 
 	a.Router.HandleFunc("/logout", a.logoutHandler)
@@ -315,6 +314,7 @@ func (a *App) getCoursesByTeacherID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Println("Is authenticated: ", session.Values["authenticated"])
 	log.Printf("Retrieved courses: %+v\n", teacher.Courses)
 
 	response := map[string]interface{}{

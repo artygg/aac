@@ -1,0 +1,1 @@
+go run main.go app.go attendance.go class.go course.go course_group_bridge.go device.go group.go group_cluster.go student.go teacher.go

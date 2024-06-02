@@ -1,31 +1,4 @@
-<script>
-    function printDropdownOptions(array) {
-        for (let i = 0; i < array.length; i++) {
-            document.write("<option>" + array[i] + "</option>");
-        }
-    }
 
-    function typeNameOfTheCourse() {
-        let mylist = document.getElementById("courseNameInput");
-        let field = document.getElementById("courseNameOutput");
-        field.value = mylist.value;
-        document.getElementById("date").value = new Date().toDateString();
-    }
-
-    function chooseGroup() {
-        let mylist = document.getElementById("groupInput");
-        let field = document.getElementById("groupOutput");
-        let option = mylist.options[mylist.selectedIndex].text;
-        if (field.value.includes(option)) {
-            field.value = field.value.replace(option + " ", "")
-        } else {
-            field.value += option + " ";
-        }
-        mylist.options[0].selected = 'selected';
-    }
-
-
-</script>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -84,5 +57,37 @@
     <p>Contact AAS support</p>
     <p>Manage cookies</p>
 </div>
+
+<script>
+
+
+    function printDropdownOptions(array) {
+        for (let i = 0; i < array.length; i++) {
+            document.write("<option>" + array[i] + "</option>");
+        }
+    }
+
+    function typeNameOfTheCourse() {
+        let mylist = document.getElementById("courseNameInput");
+        let field = document.getElementById("courseNameOutput");
+        field.value = mylist.value;
+        document.getElementById("date").value = new Date().toDateString();
+    }
+
+    function chooseGroup() {
+        let mylist = document.getElementById("groupInput");
+        let field = document.getElementById("groupOutput");
+        let option = mylist.options[mylist.selectedIndex].text;
+        if (field.value.includes(option)) {
+            field.value = field.value.replace(option + " ", "")
+        } else {
+            field.value += option + " ";
+        }
+        mylist.options[0].selected = 'selected';
+    }
+
+
+</script>
+
 </body>
 </html>
