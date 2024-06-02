@@ -230,18 +230,20 @@
         event.preventDefault();
 
         const courseName = document.getElementById("courseNameInput").value;
-        const year = document.getElementById("yearNameInput").value;
+        const year = parseInt(document.getElementById("yearNameInput").value, 10);
         const startDate = document.getElementById("startDate").value;
         const endDate = document.getElementById("endDate").value;
-        const groupIds = document.getElementById("groupOutput").value.trim().split(" ");
+        const groups = document.getElementById("groupOutput").value.trim().split(" ");
 
         const courseData = {
             name: courseName,
             year: year,
             start_date: startDate,
             end_date: endDate,
-            group_ids: groupIds
+            groups: groups
         };
+
+        console.log('Submitting course data:', courseData);
 
         fetch('/api/web/course', {
             method: 'POST',
@@ -250,7 +252,12 @@
             },
             body: JSON.stringify(courseData)
         })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text) });
+                }
+                return response.json();
+            })
             .then(data => {
                 console.log('Course created:', data);
                 window.location.href = "/courses"; // Redirect to courses page
