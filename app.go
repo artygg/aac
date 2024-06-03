@@ -11,6 +11,7 @@ import (
 	"log"
 	"mime/multipart"
 	"net/http"
+	"os"
 	"regexp"
 	"strconv"
 	"time"
@@ -244,29 +245,29 @@ func (a *App) uploadImage(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	//f, err := os.OpenFile("./uploads/"+handler.Filename, os.O_RDWR|os.O_CREATE, 0666)
-	//if err != nil {
-	//	log.Println("Error creating file:", err)
-	//	http.Error(w, "Error creating file", http.StatusInternalServerError)
-	//	return
-	//}
-	//
-	//defer f.Close()
-	//
-	//_, err = io.Copy(f, file)
-	//if err != nil {
-	//	log.Println("Error copying file:", err)
-	//	http.Error(w, "Error copying file", http.StatusInternalServerError)
-	//	return
-	//}
+	f, err := os.OpenFile("./uploads/"+handler.Filename, os.O_RDWR|os.O_CREATE, 0666)
+	if err != nil {
+		log.Println("Error creating file:", err)
+		http.Error(w, "Error creating file", http.StatusInternalServerError)
+		return
+	}
 
-	resp, err := checkFace(file)
+	defer f.Close()
+
+	_, err = io.Copy(f, file)
+	if err != nil {
+		log.Println("Error copying file:", err)
+		http.Error(w, "Error copying file", http.StatusInternalServerError)
+		return
+	}
+
+	resp, err := checkFace("./uploads/" + handler.Filename)
 
 	var student Student
 	if err := json.NewDecoder(resp.Body).Decode(&student); err != nil {
 		log.Fatalf("Failed to decode JSON response: %v", err)
 	}
-
+	log.Println(student)
 	if resp.StatusCode == 404 {
 		http.Error(w, "Student not found", http.StatusNotFound)
 		return
@@ -529,41 +530,82 @@ func (a *App) registerTeacher(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(200)
 }
 
-func checkFace(f multipart.File) (*http.Response, error) {
-	req, err := http.NewRequest("POST", "http://localhost:8080/checkFace", nil)
+func checkFace(filename string) (*http.Response, error) {
+	// Define the target URL
+	targetURL := "http://172.20.10.13:5001/logic"
+
+	// Open the specified file
+	file, err := os.Open(filename)
 	if err != nil {
-		log.Println("Error creating HTTP request:", err)
+		log.Println("Error opening file:", err)
 		return nil, err
 	}
+	defer file.Close()
 
-	// Create a new multipart writer for the request body
+	// Create a buffer to store the multipart form data
 	var requestBody bytes.Buffer
 	writer := multipart.NewWriter(&requestBody)
 
-	// Create a new form file field for the image
-	fileField, err := writer.CreateFormFile("image", "face.jpg")
+	// Create a form file field for the image
+	fileField, err := writer.CreateFormFile("image", filename)
 	if err != nil {
 		log.Println("Error creating form file field:", err)
 		return nil, err
 	}
 
 	// Copy the image data to the form file field
-	_, err = io.Copy(fileField, f)
+	_, err = io.Copy(fileField, file)
 	if err != nil {
 		log.Println("Error copying image data:", err)
 		return nil, err
 	}
 
-	writer.Close()
+	// Close the multipart writer to finalize the form
+	err = writer.Close()
+	if err != nil {
+		log.Println("Error closing multipart writer:", err)
+		return nil, err
+	}
 
-	req.Body = io.NopCloser(&requestBody)
+	// Create a new HTTP request with the multipart form data
+	req, err := http.NewRequest(http.MethodPost, targetURL, &requestBody)
+	if err != nil {
+		log.Println("Error creating HTTP request:", err)
+		return nil, err
+	}
 
+	// Set the content type for the request
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+
+	// Create an HTTP client and send the request
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println("Error sending request:", err)
+		log.Println("Error sending request:", err)
 		return nil, err
 	}
+
 	defer resp.Body.Close()
+
+	// Read the response body
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Println("Error reading response body:", err)
+		return nil, err
+	}
+
+	// Print the response body for debugging purposes
+	fmt.Println("Response body:", string(bodyBytes))
+
+	// Decode the JSON response (optional)
+	// var result map[string]interface{}
+	// if err := json.Unmarshal(bodyBytes, &result); err != nil {
+	// 	log.Println("Failed to decode JSON response:", err)
+	// 	return nil, err
+	// }
+
+	// Log the decoded response for debugging purposes (optional)
+	// log.Printf("Received response: %+v", result)
+
 	return resp, nil
 }
