@@ -61,6 +61,7 @@ func createCourse(db *sql.DB, name string, year int, startDate, endDate time.Tim
 
 	for _, groupID := range groups {
 		query := "INSERT INTO `courses-groups-bridge` (Courseid, GroupID) VALUES (?, ?)"
+		log.Print("Adding group '", groupID, "' for course with ID '", courseID, "'")
 		if _, err := tx.Exec(query, courseID, groupID); err != nil {
 			tx.Rollback()
 			log.Println("Error inserting into courses_groups_bridge:", err)

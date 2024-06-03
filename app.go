@@ -93,6 +93,11 @@ func (a *App) initializeClient() {
 	a.Router.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./website/signin.html")
 	})
+
+	a.Router.HandleFunc("/registration", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./website/register.html")
+	})
+
 	a.Router.Handle("/protected", a.userAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./website/protected.html")
 	})))
@@ -152,6 +157,7 @@ func (a *App) deviceAuthMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
+
 func (a *App) userAuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, _ := a.Store.Get(r, "aas-user")
@@ -164,6 +170,7 @@ func (a *App) userAuthMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
+
 func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 	teacher := Teacher{}
 	err := json.NewDecoder(r.Body).Decode(&teacher)
@@ -523,6 +530,8 @@ func (a *App) registerTeacher(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Println("Credentials data: ", teacher)
+
 	emailPattern := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@nhlstenden\.com$`)
 	if !emailPattern.MatchString(teacher.Email) {
 		http.Error(w, "Invalid email format", http.StatusBadRequest)
@@ -535,6 +544,8 @@ func (a *App) registerTeacher(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to register teacher", http.StatusInternalServerError)
 		log.Println("Error registering teacher:", err)
 		return
+	} else {
+		log.Println("The user has been registered! (", teacher, ")")
 	}
 
 	w.WriteHeader(200)
