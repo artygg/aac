@@ -78,6 +78,8 @@ func (a *App) initializeRoutes() {
 	a.Router.Handle("/api/web/attendance", a.userAuthMiddleware(http.HandlerFunc(a.updateAttendanceStatus))).Methods("POST")
 
 	a.Router.Handle("/api/web/course", a.userAuthMiddleware(http.HandlerFunc(a.createCourse))).Methods("POST")
+	a.Router.Handle("/api/web/class", a.userAuthMiddleware(http.HandlerFunc(a.createClass))).Methods("POST")
+	app.Router.Handle("/api/web/class/end", app.userAuthMiddleware(http.HandlerFunc(app.endClassPrematurely))).Methods("POST")
 	a.Router.Handle("/api/web/teacher", http.HandlerFunc(a.registerTeacher)).Methods("POST")
 	a.initializeClient()
 }
@@ -503,6 +505,64 @@ func (a *App) createCourse(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(200)
 }
+
+func (a *App) createClass(w http.ResponseWriter, r *http.Request) {
+    var input struct {
+        CourseID  int    `json:"course_id"`
+        StartTime string `json:"start_time"`
+        EndTime   string `json:"end_time"`
+        Room      string `json:"room"`
+    }
+
+    if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+        http.Error(w, "Invalid input", http.StatusBadRequest)
+        log.Println("Error decoding input:", err)
+        return
+    }
+
+    startTime, err := time.Parse(time.RFC3339, input.StartTime)
+    if err != nil {
+        http.Error(w, "Invalid start time format", http.StatusBadRequest)
+        log.Println("Error parsing start time:", err)
+        return
+    }
+    endTime, err := time.Parse(time.RFC3339, input.EndTime)
+    if err != nil {
+        http.Error(w, "Invalid end time format", http.StatusBadRequest)
+        log.Println("Error parsing end time:", err)
+        return
+    }
+
+    err = createClass(a.DB, input.CourseID, startTime, endTime, input.Room)
+    if err != nil {
+        http.Error(w, "Failed to create class", http.StatusInternalServerError)
+        log.Println("Error creating class:", err)
+        return
+    }
+    w.WriteHeader(http.StatusOK)
+}
+
+func (a *App) endClassPrematurely(w http.ResponseWriter, r *http.Request) {
+    var input struct {
+        ClassID int `json:"class_id"`
+    }
+
+    if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+        http.Error(w, "Invalid input", http.StatusBadRequest)
+        log.Println("Error decoding input:", err)
+        return
+    }
+
+    err := endClassPrematurely(a.DB, input.ClassID)
+    if err != nil {
+        http.Error(w, "Failed to end class prematurely", http.StatusInternalServerError)
+        log.Println("Error ending class prematurely:", err)
+        return
+    }
+
+    w.WriteHeader(http.StatusOK)
+}
+
 
 func (a *App) registerTeacher(w http.ResponseWriter, r *http.Request) {
 	var teacher = Teacher{}
