@@ -24,6 +24,7 @@ type App struct {
 	Router *mux.Router
 	DB     *sql.DB
 	Store  *sessions.CookieStore
+	Aws    string
 }
 
 func (a *App) Initialize() {
@@ -38,7 +39,7 @@ func (a *App) Initialize() {
 	a.DB.SetMaxIdleConns(0)
 
 	a.Router = mux.NewRouter()
-
+	a.Aws = "192.168.100.12"
 	err = a.generateKey()
 	if err != nil {
 		a.Store = sessions.NewCookieStore([]byte("Stan0dard0101Coo6kie0101Sto7reByAAS"))
@@ -61,8 +62,8 @@ func (a *App) Run(addr string) {
 }
 
 func (a *App) initializeRoutes() {
-	a.Router.Handle("/api/device/check", a.deviceAuthMiddleware(http.HandlerFunc(a.checkDevice))).Methods("GET")
-	a.Router.Handle("/api/device/upload", a.deviceAuthMiddleware(http.HandlerFunc(a.uploadImage))).Methods("POST")
+	a.Router.Handle("/api/device/authorise", a.deviceAuthMiddleware(http.HandlerFunc(a.checkDevice))).Methods("GET")
+	a.Router.Handle("/api/device/attendance", a.deviceAuthMiddleware(http.HandlerFunc(a.putAttendance))).Methods("POST")
 
 	a.Router.HandleFunc("/api/web/login", a.loginHandler).Methods("POST")
 
@@ -82,6 +83,10 @@ func (a *App) initializeRoutes() {
 }
 
 func (a *App) initializeClient() {
+
+	fileServer := http.FileServer(http.Dir("./platform"))
+	a.Router.Handle("/static/", http.StripPrefix("/static", fileServer))
+
 	a.Router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./platform/index.html")
 	})
@@ -204,81 +209,48 @@ func (a *App) logoutHandler(w http.ResponseWriter, r *http.Request) {
 	session.Save(r, w)
 }
 func (a *App) checkDevice(w http.ResponseWriter, r *http.Request) {
-	device, ok := r.Context().Value("device").(Device)
-	if !ok {
-		http.Error(w, "Device information not found", http.StatusInternalServerError)
-		return
+	if r.RemoteAddr == a.Aws {
+		w.WriteHeader(200)
+	} else {
+		w.WriteHeader(http.StatusServiceUnavailable)
 	}
-	fmt.Fprintf(w, "Device MAC: %s, Device Key: %s, Room: %s", device.Mac, device.Key, device.Room)
 }
-func (a *App) uploadImage(w http.ResponseWriter, r *http.Request) {
-	device, ok := r.Context().Value("device").(Device)
-	if !ok {
-		http.Error(w, "Device information not found", http.StatusInternalServerError)
-		return
+
+func (a *App) putAttendance(w http.ResponseWriter, r *http.Request) {
+	if r.RemoteAddr == a.Aws {
+		device, ok := r.Context().Value("device").(Device)
+		if !ok {
+			http.Error(w, "Device information not found", http.StatusInternalServerError)
+			return
+		}
+
+		class, err := device.getClass(a.DB)
+		if err != nil {
+			switch err {
+			case sql.ErrNoRows:
+				http.Error(w, "No Active Class for this room", http.StatusServiceUnavailable)
+			default:
+				log.Println(err)
+				http.Error(w, "Internal server error", http.StatusInternalServerError)
+			}
+			return
+		}
+
+		var student Student
+		if err := json.NewDecoder(r.Body).Decode(&student); err != nil {
+			log.Fatalf("Failed to decode JSON response: %v", err)
+		}
+
+		var attendance = Attendance{ClassID: class.Id, Student: student}
+		err = attendance.update(a.DB)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			log.Println("Error updating attendance status:", err)
+			return
+		}
+
+		w.WriteHeader(200)
 	}
-	//class, err := device.getClass(a.DB)
-	//if err != nil {
-	//	switch err {
-	//	case sql.ErrNoRows:
-	//		http.Error(w, "No Active Class for this room", http.StatusServiceUnavailable)
-	//	default:
-	//		log.Println(err)
-	//		http.Error(w, "Internal server error", http.StatusInternalServerError)
-	//	}
-	//	return
-	//}
-
-	err := r.ParseMultipartForm(10 << 20)
-	if err != nil {
-		fmt.Println("Error parsing form:", err)
-		http.Error(w, "Error parsing form", http.StatusBadRequest)
-		return
-	}
-
-	file, handler, err := r.FormFile("image")
-	if err != nil {
-		fmt.Println("Error retrieving file:", err)
-		http.Error(w, "Error retrieving file", http.StatusBadRequest)
-		return
-	}
-	defer file.Close()
-
-	//f, err := os.OpenFile("./uploads/"+handler.Filename, os.O_RDWR|os.O_CREATE, 0666)
-	//if err != nil {
-	//	log.Println("Error creating file:", err)
-	//	http.Error(w, "Error creating file", http.StatusInternalServerError)
-	//	return
-	//}
-	//
-	//defer f.Close()
-	//
-	//_, err = io.Copy(f, file)
-	//if err != nil {
-	//	log.Println("Error copying file:", err)
-	//	http.Error(w, "Error copying file", http.StatusInternalServerError)
-	//	return
-	//}
-
-	resp, err := checkFace(file)
-
-	var student Student
-	if err := json.NewDecoder(resp.Body).Decode(&student); err != nil {
-		log.Fatalf("Failed to decode JSON response: %v", err)
-	}
-
-	if resp.StatusCode == 404 {
-		http.Error(w, "Student not found", http.StatusNotFound)
-		return
-	}
-
-	if err := json.NewDecoder(resp.Body).Decode(&student); err != nil {
-		log.Fatalf("Failed to decode JSON response: %v", err)
-	}
-
-	fmt.Fprintf(w, "File uploaded successfully: %s", handler.Filename)
-	fmt.Fprintf(w, "Device MAC: %s, Device Key: %s, Room: %s", device.Mac, device.Key, device.Room)
-
 }
 
 func (a *App) protectedHandler(w http.ResponseWriter, r *http.Request) {

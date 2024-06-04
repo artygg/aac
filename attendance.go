@@ -47,29 +47,44 @@ func getAttendanceByCourse(db *sql.DB, courseID int) ([]Attendance, error) {
 }
 
 func (attendance *Attendance) update(db *sql.DB) error {
-	query := " UPDATE attendances SET `Status` = ?, `Time` = ? WHERE StudentId = ? AND ClassId = ?"
-	stmt, err := db.Prepare(query)
+	updateQuery := "UPDATE attendances SET `Status` = ?, `Time` = ? WHERE StudentId = ? AND ClassId = ?"
+	stmt, err := db.Prepare(updateQuery)
 	if err != nil {
-		log.Println("Error preparing query:", err)
+		log.Println("Error preparing update query:", err)
 		return err
 	}
 	defer stmt.Close()
 
 	res, err := stmt.Exec(attendance.Status, time.Now(), attendance.Student.Id, attendance.ClassID)
 	if err != nil {
-		log.Println("Error executing query:", err)
+		log.Println("Error executing update query:", err)
 		return err
 	}
 
 	rowsAffected, err := res.RowsAffected()
 	if err != nil {
-		log.Println("Error getting rows affected:", err)
+		log.Println("Error getting rows affected by update:", err)
 		return err
 	}
 
 	if rowsAffected == 0 {
-		log.Println("No rows updated")
-		return err
+		log.Println("No rows updated. Inserting new row.")
+
+		insertQuery := "INSERT INTO attendances (`Status`, `Time`, `StudentId`, `ClassId`) VALUES (?, ?, ?, ?)"
+		insertStmt, err := db.Prepare(insertQuery)
+		if err != nil {
+			log.Println("Error preparing insert query:", err)
+			return err
+		}
+		defer insertStmt.Close()
+
+		_, err = insertStmt.Exec(attendance.Status, time.Now(), attendance.Student.Id, attendance.ClassID)
+		if err != nil {
+			log.Println("Error executing insert query:", err)
+			return err
+		}
 	}
+
 	return nil
+
 }
