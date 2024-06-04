@@ -67,7 +67,7 @@
         column-gap: 1rem;
     }
 
-    #courseNameOutput, #groupInput, #date{
+    #courseNameOutput, #groupInput, #roomSelector, #date{
         height: 2rem;
         width: 20vw;
     }
@@ -126,18 +126,20 @@
 </div>
 <div class="main-part">
     <h1>Add new class description</h1>
-    <form>
+    <form id="form">
         <p>Name of the class</p>
-        <input type="text" class="input-big" id="courseNameInput" required oninput="typeNameOfTheCourse()">
+        <select id="roomSelector" onchange="chooseRoom()">
+            <option>Choose room</option>
+        </select>
         <p>Choose groups</p>
         <select id="groupInput" onchange="chooseGroup()">
-            <option>Choose group</option>
+            <option>Choose groups</option>
         </select>
         <h2>Check your new class</h2>
         <div class="checking-container">
             <div class="checking">
                 <p>Class name</p>
-                <p><input type="text" id="courseNameOutput" required readonly></p>
+                <p><input type="text" id="roomOutput" required readonly></p>
             </div>
             <div class="checking">
                 <p>Class groups</p>
@@ -159,13 +161,26 @@
 </div>
 
 <script>
-    fetch('/api/web/groups')
+    const urlParams = new URLSearchParams(window.location.search);
+    const courseID = urlParams.get('courseID');
+
+    fetch('/api/web/rooms')
+        .then(response => response.json())
+        .then(data2 => {
+            const rooms = data2.map(spot => spot.room);
+            console.log(rooms)
+            printDropdownOptions(rooms, "roomSelector");
+        })
+        .catch(error => console.error('Error fetching rooms:', error));
+
+    fetch(`/api/web/groups/by_course?courseID=${courseID}`)
         .then(response => response.json())
         .then(data => {
             const groupIds = data.map(group => group.id);
-            printDropdownOptions(groupIds);
+            printDropdownOptions(groupIds, "groupInput");
         })
         .catch(error => console.error('Error fetching groups:', error));
+
 
     function chooseGroup() {
         let mylist = document.getElementById("groupInput");
@@ -179,8 +194,8 @@
         mylist.options[0].selected = 'selected';
     }
 
-    function printDropdownOptions(array) {
-        const selectElement = document.getElementById("groupInput");
+    function printDropdownOptions(array, elementId) {
+        const selectElement = document.getElementById(elementId);
         array.forEach(option => {
             const optionElement = document.createElement("option");
             optionElement.textContent = option;
@@ -189,23 +204,13 @@
         });
     }
 
-    function typeNameOfTheCourse() {
-        let mylist = document.getElementById("courseNameInput");
-        let field = document.getElementById("courseNameOutput");
-        field.value = mylist.value;
-        document.getElementById("date").value = new Date().toDateString();
-    }
-
-    function chooseGroup() {
-        let mylist = document.getElementById("groupInput");
-        let field = document.getElementById("groupOutput");
-        let option = mylist.options[mylist.selectedIndex].text;
-        if (field.value.includes(option)) {
-            field.value = field.value.replace(option + " ", "")
-        } else {
-            field.value += option + " ";
+    function chooseRoom() {
+        let mylist = document.getElementById("roomSelector");
+        let field = document.getElementById("roomOutput");
+        if (mylist.value != "Choose room") {
+            field.value = mylist.value;
         }
-        mylist.options[0].selected = 'selected';
+        document.getElementById("date").value = new Date().toDateString();
     }
 
 

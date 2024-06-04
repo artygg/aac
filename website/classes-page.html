@@ -170,11 +170,11 @@
         </div>
         <div class="navigation-element">
             <img src="img/plus.png">
-            <a href="class/create"><h2>Start new class</h2></a>
+            <a href='/class/create' id="create-class-link"><h2>Start new class</h2></a>
         </div>
         <div class="navigation-element">
             <img src="img/statistics.png">
-            <a href='' id="statistics-link"><h2>Watch statistics</h2></a>
+            <a href='/attendance/by_course' id="statistics-link"><h2>Watch statistics</h2></a>
         </div>
     </div>
     <div class="recent">
@@ -194,6 +194,9 @@
 <script>
     const urlParams = new URLSearchParams(window.location.search);
     const courseID = urlParams.get('courseID');
+
+    const createClassLink = document.getElementById('create-class-link');
+    createClassLink.href = `/class/create?courseID=${courseID}`;
 
     const statisticsLink = document.getElementById('statistics-link');
     statisticsLink.href = `/attendance/by_course?courseID=${courseID}`;

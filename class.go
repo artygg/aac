@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"time"
 )
 
 type Class struct {
@@ -65,4 +66,46 @@ func getClassesByCourseID(db *sql.DB, courseID int) ([]Class, error) {
 	}
 
 	return classes, nil
+}
+
+func createClass(db *sql.DB, courseID int, startTime, endTime time.Time, room string) error {
+	tx, err := db.Begin()
+	if err != nil {
+		log.Println("Error starting transaction:", err)
+		return err
+	}
+
+	query := `INSERT INTO classes (CourseID, StartTime, EndTime, Room) VALUES (?, ?, ?, ?)`
+	res, err := tx.Exec(query, courseID, startTime, endTime, room)
+	if err != nil {
+		tx.Rollback()
+		log.Println("Error inserting class:", err)
+		return err
+	}
+
+	classID, err := res.LastInsertId()
+	if err != nil {
+		tx.Rollback()
+		log.Println("Error getting last insert ID:", err)
+		return err
+	}
+
+	log.Println("Class created with ID:", classID)
+
+	if err := tx.Commit(); err != nil {
+		log.Println("Error committing transaction:", err)
+		return err
+	}
+
+	return nil
+}
+
+func endClassPrematurely(db *sql.DB, classID int) error {
+	query := `UPDATE classes SET EndTime = ? WHERE Id = ?`
+	_, err := db.Exec(query, time.Now(), classID)
+	if err != nil {
+		log.Println("Error updating class end time:", err)
+		return err
+	}
+	return nil
 }

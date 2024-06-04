@@ -11,6 +11,7 @@ import (
 	"log"
 	"mime/multipart"
 	"net/http"
+	"os"
 	"regexp"
 	"strconv"
 	"time"
@@ -70,6 +71,7 @@ func (a *App) initializeRoutes() {
 	a.Router.Handle("/api/web/courses", a.userAuthMiddleware(http.HandlerFunc(a.getCoursesByTeacherID))).Methods("GET")
 	a.Router.Handle("/api/web/groups", a.userAuthMiddleware(http.HandlerFunc(a.getAllGroups))).Methods("GET")
 	a.Router.Handle("/api/web/groups/by_course", a.userAuthMiddleware(http.HandlerFunc(a.getGroupsByCourseID))).Methods("GET")
+	a.Router.Handle("/api/web/rooms", a.userAuthMiddleware(http.HandlerFunc(a.getRooms))).Methods("GET")
 
 	a.Router.Handle("/api/web/attendance/by_class", a.userAuthMiddleware(http.HandlerFunc(a.getAttendencesByClassID))).Methods("GET")
 	a.Router.Handle("/api/web/attendance/by_course", a.userAuthMiddleware(http.HandlerFunc(a.getAttendanceByCourseID))).Methods("GET")
@@ -77,6 +79,8 @@ func (a *App) initializeRoutes() {
 	a.Router.Handle("/api/web/attendance", a.userAuthMiddleware(http.HandlerFunc(a.updateAttendanceStatus))).Methods("POST")
 
 	a.Router.Handle("/api/web/course", a.userAuthMiddleware(http.HandlerFunc(a.createCourse))).Methods("POST")
+	a.Router.Handle("/api/web/class", a.userAuthMiddleware(http.HandlerFunc(a.createClass))).Methods("POST")
+	a.Router.Handle("/api/web/class/end", a.userAuthMiddleware(http.HandlerFunc(a.endClassPrematurely))).Methods("POST")
 	a.Router.Handle("/api/web/teacher", http.HandlerFunc(a.registerTeacher)).Methods("POST")
 	a.initializeClient()
 }
@@ -157,7 +161,6 @@ func (a *App) deviceAuthMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
-
 func (a *App) userAuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, _ := a.Store.Get(r, "aas-user")
@@ -170,7 +173,6 @@ func (a *App) userAuthMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
-
 func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 	teacher := Teacher{}
 	err := json.NewDecoder(r.Body).Decode(&teacher)
@@ -258,29 +260,29 @@ func (a *App) uploadImage(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	//f, err := os.OpenFile("./uploads/"+handler.Filename, os.O_RDWR|os.O_CREATE, 0666)
-	//if err != nil {
-	//	log.Println("Error creating file:", err)
-	//	http.Error(w, "Error creating file", http.StatusInternalServerError)
-	//	return
-	//}
-	//
-	//defer f.Close()
-	//
-	//_, err = io.Copy(f, file)
-	//if err != nil {
-	//	log.Println("Error copying file:", err)
-	//	http.Error(w, "Error copying file", http.StatusInternalServerError)
-	//	return
-	//}
+	f, err := os.OpenFile("./uploads/"+handler.Filename, os.O_RDWR|os.O_CREATE, 0666)
+	if err != nil {
+		log.Println("Error creating file:", err)
+		http.Error(w, "Error creating file", http.StatusInternalServerError)
+		return
+	}
 
-	resp, err := checkFace(file)
+	defer f.Close()
+
+	_, err = io.Copy(f, file)
+	if err != nil {
+		log.Println("Error copying file:", err)
+		http.Error(w, "Error copying file", http.StatusInternalServerError)
+		return
+	}
+
+	resp, err := checkFace("./uploads/" + handler.Filename)
 
 	var student Student
 	if err := json.NewDecoder(resp.Body).Decode(&student); err != nil {
 		log.Fatalf("Failed to decode JSON response: %v", err)
 	}
-
+	log.Println(student)
 	if resp.StatusCode == 404 {
 		http.Error(w, "Student not found", http.StatusNotFound)
 		return
@@ -329,7 +331,6 @@ func (a *App) getCoursesByTeacherID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Println("Is authenticated: ", session.Values["authenticated"])
 	log.Printf("Retrieved courses: %+v\n", teacher.Courses)
 
 	response := map[string]interface{}{
@@ -402,9 +403,6 @@ func (a *App) getAttendencesByClassID(w http.ResponseWriter, r *http.Request) {
 
 func (a *App) getClassesByCourseID(w http.ResponseWriter, r *http.Request) {
 	courseID, err := strconv.Atoi(r.URL.Query().Get("courseID"))
-	log.Println("Full URL:", r.URL.String())
-	log.Println("Raw Query:", r.URL.RawQuery)
-	log.Println("Course ID:", r.URL.Query().Get("courseID"))
 	if err != nil {
 		http.Error(w, "Invalid courseID", http.StatusBadRequest)
 	}
@@ -521,6 +519,63 @@ func (a *App) createCourse(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(200)
 }
 
+func (a *App) createClass(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		CourseID  int    `json:"course_id"`
+		StartTime string `json:"start_time"`
+		EndTime   string `json:"end_time"`
+		Room      string `json:"room"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		http.Error(w, "Invalid input", http.StatusBadRequest)
+		log.Println("Error decoding input:", err)
+		return
+	}
+
+	startTime, err := time.Parse(time.RFC3339, input.StartTime)
+	if err != nil {
+		http.Error(w, "Invalid start time format", http.StatusBadRequest)
+		log.Println("Error parsing start time:", err)
+		return
+	}
+	endTime, err := time.Parse(time.RFC3339, input.EndTime)
+	if err != nil {
+		http.Error(w, "Invalid end time format", http.StatusBadRequest)
+		log.Println("Error parsing end time:", err)
+		return
+	}
+
+	err = createClass(a.DB, input.CourseID, startTime, endTime, input.Room)
+	if err != nil {
+		http.Error(w, "Failed to create class", http.StatusInternalServerError)
+		log.Println("Error creating class:", err)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func (a *App) endClassPrematurely(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		ClassID int `json:"class_id"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		http.Error(w, "Invalid input", http.StatusBadRequest)
+		log.Println("Error decoding input:", err)
+		return
+	}
+
+	err := endClassPrematurely(a.DB, input.ClassID)
+	if err != nil {
+		http.Error(w, "Failed to end class prematurely", http.StatusInternalServerError)
+		log.Println("Error ending class prematurely:", err)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
 func (a *App) registerTeacher(w http.ResponseWriter, r *http.Request) {
 	var teacher = Teacher{}
 
@@ -529,8 +584,6 @@ func (a *App) registerTeacher(w http.ResponseWriter, r *http.Request) {
 		log.Println("Error decoding input:", err)
 		return
 	}
-
-	log.Println("Credentials data: ", teacher)
 
 	emailPattern := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@nhlstenden\.com$`)
 	if !emailPattern.MatchString(teacher.Email) {
@@ -544,48 +597,105 @@ func (a *App) registerTeacher(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to register teacher", http.StatusInternalServerError)
 		log.Println("Error registering teacher:", err)
 		return
-	} else {
-		log.Println("The user has been registered! (", teacher, ")")
 	}
 
 	w.WriteHeader(200)
 }
 
-func checkFace(f multipart.File) (*http.Response, error) {
-	req, err := http.NewRequest("POST", "http://localhost:8080/checkFace", nil)
+func checkFace(filename string) (*http.Response, error) {
+	// Define the target URL
+	targetURL := "http://172.20.10.13:5001/logic"
+
+	// Open the specified file
+	file, err := os.Open(filename)
 	if err != nil {
-		log.Println("Error creating HTTP request:", err)
+		log.Println("Error opening file:", err)
 		return nil, err
 	}
+	defer file.Close()
 
-	// Create a new multipart writer for the request body
+	// Create a buffer to store the multipart form data
 	var requestBody bytes.Buffer
 	writer := multipart.NewWriter(&requestBody)
 
-	// Create a new form file field for the image
-	fileField, err := writer.CreateFormFile("image", "face.jpg")
+	// Create a form file field for the image
+	fileField, err := writer.CreateFormFile("image", filename)
 	if err != nil {
 		log.Println("Error creating form file field:", err)
 		return nil, err
 	}
 
 	// Copy the image data to the form file field
-	_, err = io.Copy(fileField, f)
+	_, err = io.Copy(fileField, file)
 	if err != nil {
 		log.Println("Error copying image data:", err)
 		return nil, err
 	}
 
-	writer.Close()
+	// Close the multipart writer to finalize the form
+	err = writer.Close()
+	if err != nil {
+		log.Println("Error closing multipart writer:", err)
+		return nil, err
+	}
 
-	req.Body = io.NopCloser(&requestBody)
+	// Create a new HTTP request with the multipart form data
+	req, err := http.NewRequest(http.MethodPost, targetURL, &requestBody)
+	if err != nil {
+		log.Println("Error creating HTTP request:", err)
+		return nil, err
+	}
 
+	// Set the content type for the request
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+
+	// Create an HTTP client and send the request
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println("Error sending request:", err)
+		log.Println("Error sending request:", err)
 		return nil, err
 	}
+
 	defer resp.Body.Close()
+
+	// Read the response body
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Println("Error reading response body:", err)
+		return nil, err
+	}
+
+	// Print the response body for debugging purposes
+	fmt.Println("Response body:", string(bodyBytes))
+
+	// Decode the JSON response (optional)
+	// var result map[string]interface{}
+	// if err := json.Unmarshal(bodyBytes, &result); err != nil {
+	// 	log.Println("Failed to decode JSON response:", err)
+	// 	return nil, err
+	// }
+
+	// Log the decoded response for debugging purposes (optional)
+	// log.Printf("Received response: %+v", result)
+
 	return resp, nil
+}
+
+func (a *App) getRooms(w http.ResponseWriter, r *http.Request) {
+	groups, err := getRooms(a.DB)
+
+	if err != nil {
+		http.Error(w, "Failed to get courses", http.StatusInternalServerError)
+		log.Println("Error retrieving courses:", err)
+		return
+	}
+
+	log.Printf("Retrieved courses: %+v\n", groups)
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(groups); err != nil {
+		http.Error(w, "Failed to encode courses", http.StatusInternalServerError)
+		log.Println("Error encoding courses to JSON:", err)
+	}
 }
