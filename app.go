@@ -1,15 +1,12 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"crypto/rand"
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
-	"mime/multipart"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -475,6 +472,64 @@ func (a *App) createCourse(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(200)
 }
 
+func (a *App) createClass(w http.ResponseWriter, r *http.Request) {
+    var input struct {
+        CourseID  int    `json:"course_id"`
+        StartTime string `json:"start_time"`
+        EndTime   string `json:"end_time"`
+        Room      string `json:"room"`
+    }
+
+    if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+        http.Error(w, "Invalid input", http.StatusBadRequest)
+        log.Println("Error decoding input:", err)
+        return
+    }
+
+    startTime, err := time.Parse(time.RFC3339, input.StartTime)
+    if err != nil {
+        http.Error(w, "Invalid start time format", http.StatusBadRequest)
+        log.Println("Error parsing start time:", err)
+        return
+    }
+    endTime, err := time.Parse(time.RFC3339, input.EndTime)
+    if err != nil {
+        http.Error(w, "Invalid end time format", http.StatusBadRequest)
+        log.Println("Error parsing end time:", err)
+        return
+    }
+
+    err = createClass(a.DB, input.CourseID, startTime, endTime, input.Room)
+    if err != nil {
+        http.Error(w, "Failed to create class", http.StatusInternalServerError)
+        log.Println("Error creating class:", err)
+        return
+    }
+    w.WriteHeader(http.StatusOK)
+}
+
+func (a *App) endClassPrematurely(w http.ResponseWriter, r *http.Request) {
+    var input struct {
+        ClassID int `json:"class_id"`
+    }
+
+    if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+        http.Error(w, "Invalid input", http.StatusBadRequest)
+        log.Println("Error decoding input:", err)
+        return
+    }
+
+    err := endClassPrematurely(a.DB, input.ClassID)
+    if err != nil {
+        http.Error(w, "Failed to end class prematurely", http.StatusInternalServerError)
+        log.Println("Error ending class prematurely:", err)
+        return
+    }
+
+    w.WriteHeader(http.StatusOK)
+}
+
+
 func (a *App) registerTeacher(w http.ResponseWriter, r *http.Request) {
 	var teacher = Teacher{}
 
@@ -499,43 +554,4 @@ func (a *App) registerTeacher(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(200)
-}
-
-func checkFace(f multipart.File) (*http.Response, error) {
-	req, err := http.NewRequest("POST", "http://localhost:8080/checkFace", nil)
-	if err != nil {
-		log.Println("Error creating HTTP request:", err)
-		return nil, err
-	}
-
-	// Create a new multipart writer for the request body
-	var requestBody bytes.Buffer
-	writer := multipart.NewWriter(&requestBody)
-
-	// Create a new form file field for the image
-	fileField, err := writer.CreateFormFile("image", "face.jpg")
-	if err != nil {
-		log.Println("Error creating form file field:", err)
-		return nil, err
-	}
-
-	// Copy the image data to the form file field
-	_, err = io.Copy(fileField, f)
-	if err != nil {
-		log.Println("Error copying image data:", err)
-		return nil, err
-	}
-
-	writer.Close()
-
-	req.Body = io.NopCloser(&requestBody)
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		fmt.Println("Error sending request:", err)
-		return nil, err
-	}
-	defer resp.Body.Close()
-	return resp, nil
 }
