@@ -118,6 +118,7 @@ func (a *App) initializeClient() {
 
 func (a *App) deviceAuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Println(r.RemoteAddr)
 		device := Device{}
 		device.Mac = r.Header.Get("X-MAC-ADDRESS")
 		key := r.Header.Get("X-API-KEY")
@@ -211,6 +212,7 @@ func (a *App) checkDevice(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Error:", err)
 		return
 	}
+	log.Println(host)
 	if host == a.Aws {
 		w.WriteHeader(http.StatusOK)
 	} else {
@@ -227,39 +229,37 @@ func (a *App) putAttendance(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Println("TI BEBRA: " + host)
 	if host == a.Aws {
-		device, ok := r.Context().Value("device").(Device)
-		if !ok {
-			log.Println("Device not dound!")
-			http.Error(w, "Device information not found", http.StatusInternalServerError)
-			return
-		}
-
-		class, err := device.getClass(a.DB)
-		if err != nil {
-			switch err {
-			case sql.ErrNoRows:
-				http.Error(w, "No Active Class for this room", http.StatusServiceUnavailable)
-			default:
-				log.Println(err)
-				http.Error(w, "Internal server error", http.StatusInternalServerError)
-			}
-			return
-		}
-
+		//device, ok := r.Context().Value("device").(Device)
+		//if !ok {
+		//	log.Println("Device not dound!")
+		//	http.Error(w, "Device information not found", http.StatusInternalServerError)
+		//	return
+		//}
+		//class, err := device.getClass(a.DB)
+		//if err != nil {
+		//	switch err {
+		//	case sql.ErrNoRows:
+		//		http.Error(w, "No Active Class for this room", http.StatusServiceUnavailable)
+		//	default:
+		//		log.Println(err)
+		//		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		//	}
+		//	return
+		//}
 		var student Student
 		if err := json.NewDecoder(r.Body).Decode(&student); err != nil {
 			log.Fatalf("Failed to decode JSON response: %v", err)
 		}
 		log.Println(student)
 
-		var attendance = Attendance{ClassID: class.Id, Student: student}
-		err = attendance.update(a.DB)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			log.Println("Error updating attendance status:", err)
-			return
-		}
-		w.WriteHeader(200)
+		//var attendance = Attendance{ClassID: class.Id, Student: student}
+		//err = attendance.update(a.DB)
+		//if err != nil {
+		//	http.Error(w, err.Error(), http.StatusInternalServerError)
+		//	log.Println("Error updating attendance status:", err)
+		//	return
+		//}
+		//w.WriteHeader(200)
 	}
 }
 
