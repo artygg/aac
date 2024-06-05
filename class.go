@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 )
 
@@ -40,7 +41,7 @@ func getClassesByCourseID(db *sql.DB, courseID int) ([]Class, error) {
 	query := fmt.Sprintf("SELECT Id, CourseID, Room, StartTime, EndTime FROM classes WHERE CourseID = %v", courseID)
 	rows, err := db.Query(query)
 	if err != nil {
-		log.Println("Error executing query:", err)
+		log.Println("Error executing getClassesByCourseID() query:", err)
 		return nil, fmt.Errorf("failed to execute query: %w", err)
 	}
 	defer func() {
@@ -76,8 +77,6 @@ func createClass(db *sql.DB, courseID int, startTime time.Time, endTime time.Tim
 	}
 
 	query := `INSERT INTO classes (CourseID, StartTime, EndTime, Room) VALUES (?, ?, ?, ?)`
-	log.Println("Course id sent in function: ", courseID)
-	log.Println("Room: ", room)
 	res, err := tx.Exec(query, courseID, startTime, endTime, room)
 	if err != nil {
 		tx.Rollback()
@@ -93,11 +92,34 @@ func createClass(db *sql.DB, courseID int, startTime time.Time, endTime time.Tim
 	}
 
 	for _, groupID := range groups {
+		log.Println("*Group list: <", groups, ">")
 		query := "INSERT INTO `classes-groups-bridge` (Classid, GroupID) VALUES (?, ?)"
-		log.Print("Adding group '", groupID, "' for class with ID '", classID, "'")
 		if _, err := tx.Exec(query, classID, groupID); err != nil {
 			tx.Rollback()
 			log.Println("Error inserting into classes_groups_bridge:", err)
+			return err
+		}
+	}
+
+	for i := range groups {
+		log.Print("Group : <", groups[i], ">")
+	}
+	// Retrieve students belonging to the groups associated with the class
+	students, err := getStudentsInGroups(db, groups)
+	log.Println("Students: ", students)
+	if err != nil {
+		tx.Rollback()
+		log.Println("Error retrieving students:", err)
+		return err
+	}
+
+	// Insert attendance records for each student and the newly created class
+	for _, student := range students {
+		query := "INSERT INTO attendances (ClassID, StudentID, Time, Status) VALUES (?, ?, ?, ?)"
+		_, err := tx.Exec(query, classID, student.Id, " ", 0)
+		if err != nil {
+			tx.Rollback()
+			log.Println("Error inserting attendance record:", err)
 			return err
 		}
 	}
@@ -108,6 +130,38 @@ func createClass(db *sql.DB, courseID int, startTime time.Time, endTime time.Tim
 	}
 
 	return nil
+}
+
+func getStudentsInGroups(db *sql.DB, groups []string) ([]Student, error) {
+	var students []Student
+	log.Println("Before student appending")
+	// Construct a query to retrieve students belonging to the specified groups
+	query := fmt.Sprintf("SELECT s.ID, s.FirstName, s.LastName, s.Email FROM students s INNER JOIN `groups assign` gs ON s.ID = gs.StudentID INNER JOIN groups g ON gs.GroupID = g.ID WHERE g.ID IN ('%s')", strings.Join(groups, "', '"))
+
+	rows, err := db.Query(query)
+	if err != nil {
+		log.Println("Error executing getStudentsInGroups() query:", err)
+		return nil, err
+	}
+	defer rows.Close()
+	log.Println("Row: ", rows)
+	for rows.Next() {
+		var student Student
+		log.Println("Student with id ", student.Id, " is being added")
+		if err := rows.Scan(&student.Id, &student.FirstName, &student.LastName, &student.Email); err != nil {
+			log.Println("Error scanning row:", err)
+			return nil, err
+		}
+
+		students = append(students, student)
+	}
+	log.Println("After student appending")
+	if err := rows.Err(); err != nil {
+		log.Println("Error iterating over rows:", err)
+		return nil, err
+	}
+
+	return students, nil
 }
 
 func endClassPrematurely(db *sql.DB, classID int) error {

@@ -126,6 +126,10 @@ func (a *App) initializeClient() {
 		http.ServeFile(w, r, "./website/course-attendance-statistics.html")
 	})))
 
+	a.Router.Handle("/attendance/by_class", a.userAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./website/class-attendance.html")
+	})))
+
 	a.Router.HandleFunc("/logout", a.logoutHandler)
 }
 
@@ -549,7 +553,7 @@ func (a *App) createClass(w http.ResponseWriter, r *http.Request) {
 		log.Println("Error parsing end time:", err)
 		return
 	}
-	log.Println("Course id in API: ", input.CourseID)
+
 	err = createClass(a.DB, input.CourseID, startTime, endTime, input.Room, input.Groups)
 	if err != nil {
 		http.Error(w, "Failed to create class", http.StatusInternalServerError)
