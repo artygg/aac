@@ -68,7 +68,7 @@ func getClassesByCourseID(db *sql.DB, courseID int) ([]Class, error) {
 	return classes, nil
 }
 
-func createClass(db *sql.DB, courseID int, startTime, endTime time.Time, room string) error {
+func createClass(db *sql.DB, courseID int, startTime time.Time, endTime time.Time, room string, groups []string) error {
 	tx, err := db.Begin()
 	if err != nil {
 		log.Println("Error starting transaction:", err)
@@ -76,6 +76,8 @@ func createClass(db *sql.DB, courseID int, startTime, endTime time.Time, room st
 	}
 
 	query := `INSERT INTO classes (CourseID, StartTime, EndTime, Room) VALUES (?, ?, ?, ?)`
+	log.Println("Course id sent in function: ", courseID)
+	log.Println("Room: ", room)
 	res, err := tx.Exec(query, courseID, startTime, endTime, room)
 	if err != nil {
 		tx.Rollback()
@@ -90,7 +92,15 @@ func createClass(db *sql.DB, courseID int, startTime, endTime time.Time, room st
 		return err
 	}
 
-	log.Println("Class created with ID:", classID)
+	for _, groupID := range groups {
+		query := "INSERT INTO `classes-groups-bridge` (Classid, GroupID) VALUES (?, ?)"
+		log.Print("Adding group '", groupID, "' for class with ID '", classID, "'")
+		if _, err := tx.Exec(query, classID, groupID); err != nil {
+			tx.Rollback()
+			log.Println("Error inserting into classes_groups_bridge:", err)
+			return err
+		}
+	}
 
 	if err := tx.Commit(); err != nil {
 		log.Println("Error committing transaction:", err)

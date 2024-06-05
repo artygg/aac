@@ -67,7 +67,7 @@
         column-gap: 1rem;
     }
 
-    #courseNameOutput, #groupInput, #roomSelector, #date{
+    #roomOutput, #groupInput, #roomSelector, #startDateOutput, #endDateOutput{
         height: 2rem;
         width: 20vw;
     }
@@ -109,6 +109,17 @@
         height: 5vh;
         width: 5vh;
     }
+
+    #date {
+        display: flex;
+        gap: 1rem;
+    }
+
+    #time-choice {
+        display: flex;
+        gap: 1rem;
+    }
+
 </style>
 <body>
 <header>
@@ -135,6 +146,16 @@
         <select id="groupInput" onchange="chooseGroup()">
             <option>Choose groups</option>
         </select>
+        <div id="time-choice">
+        <div class="date-choice">
+            <p>Start date</p>
+            <p><input type="datetime-local" id="startTime" required oninput="chooseStartTime()"></p>
+        </div>
+        <div class="date-choice">
+            <p>End date</p>
+            <p><input type="datetime-local" id="endTime" required oninput="chooseEndTime()"></p>
+        </div>
+        </div>
         <h2>Check your new class</h2>
         <div class="checking-container">
             <div class="checking">
@@ -143,11 +164,19 @@
             </div>
             <div class="checking">
                 <p>Class groups</p>
-                <p><input type="text" id="groupOutput" required readonly></p>
+                <p><input type="text" id="groupOutput" required readonly ></p>
             </div>
         </div>
-        <p>Class date</p>
-        <p><input type="text" id="date" readonly required></p>
+        <div id="date">
+        <div id="startDateContainer">
+        <p>Class start date</p>
+        <p><input type="text" id="startTimeOutput" readonly required></p>
+        </div>
+        <div id="endDateContainer">
+        <p>Class end date</p>
+        <p><input type="text" id="endTimeOutput" readonly required></p>
+        </div>
+        </div>
         <button type="submit">Add the class</button>
     </form>
 
@@ -162,7 +191,7 @@
 
 <script>
     const urlParams = new URLSearchParams(window.location.search);
-    const courseID = urlParams.get('courseID');
+    const urlCourseID = urlParams.get('courseID');
 
     fetch('/api/web/rooms')
         .then(response => response.json())
@@ -173,7 +202,7 @@
         })
         .catch(error => console.error('Error fetching rooms:', error));
 
-    fetch(`/api/web/groups/by_course?courseID=${courseID}`)
+    fetch(`/api/web/groups/by_course?courseID=${urlCourseID}`)
         .then(response => response.json())
         .then(data => {
             const groupIds = data.map(group => group.id);
@@ -210,9 +239,57 @@
         if (mylist.value != "Choose room") {
             field.value = mylist.value;
         }
-        document.getElementById("date").value = new Date().toDateString();
     }
 
+    function chooseEndTime() {
+        let mylist = document.getElementById("endTime");
+        let field = document.getElementById("endTimeOutput");
+        field.value = mylist.value.replace("T", " ");
+    }
+
+    function chooseStartTime() {
+        let mylist = document.getElementById("startTime");
+        let field = document.getElementById("startTimeOutput");
+        field.value = mylist.value.replace("T", " ");
+    }
+
+    document.getElementById("form").addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        const room = document.getElementById("roomOutput").value;
+        const courseID = parseInt(urlCourseID);
+        const startTime = document.getElementById("startTimeOutput").value;
+        const endTime = document.getElementById("endTimeOutput").value;
+        const groups = document.getElementById("groupOutput").value.trim().split(" ");
+
+        const classData = {
+            course_id: courseID,
+            start_time: startTime,
+            end_time: endTime,
+            room: room,
+            groups: groups
+        };
+
+        console.log('Submitting course data:', classData);
+
+        fetch('/api/web/class', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(classData)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text) });
+                }
+            })
+            .then(data => {
+                console.log('Class created:', data);
+                // window.location.href = `/classes?courseID=${urlCourseID}`;
+            })
+            .catch(error => console.error('Error creating course:', error));
+    });
 
 </script>
 

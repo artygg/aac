@@ -403,6 +403,9 @@ func (a *App) getAttendencesByClassID(w http.ResponseWriter, r *http.Request) {
 
 func (a *App) getClassesByCourseID(w http.ResponseWriter, r *http.Request) {
 	courseID, err := strconv.Atoi(r.URL.Query().Get("courseID"))
+	log.Println("Full URL:", r.URL.String())
+	log.Println("Raw Query:", r.URL.RawQuery)
+	log.Println("Course ID:", r.URL.Query().Get("courseID"))
 	if err != nil {
 		http.Error(w, "Invalid courseID", http.StatusBadRequest)
 	}
@@ -521,10 +524,11 @@ func (a *App) createCourse(w http.ResponseWriter, r *http.Request) {
 
 func (a *App) createClass(w http.ResponseWriter, r *http.Request) {
 	var input struct {
-		CourseID  int    `json:"course_id"`
-		StartTime string `json:"start_time"`
-		EndTime   string `json:"end_time"`
-		Room      string `json:"room"`
+		CourseID  int      `json:"course_id"`
+		StartTime string   `json:"start_time"`
+		EndTime   string   `json:"end_time"`
+		Room      string   `json:"room"`
+		Groups    []string `json:"groups"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
@@ -533,20 +537,20 @@ func (a *App) createClass(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	startTime, err := time.Parse(time.RFC3339, input.StartTime)
+	startTime, err := time.Parse("2006-01-02 15:04", input.StartTime)
 	if err != nil {
 		http.Error(w, "Invalid start time format", http.StatusBadRequest)
 		log.Println("Error parsing start time:", err)
 		return
 	}
-	endTime, err := time.Parse(time.RFC3339, input.EndTime)
+	endTime, err := time.Parse("2006-01-02 15:04", input.EndTime)
 	if err != nil {
 		http.Error(w, "Invalid end time format", http.StatusBadRequest)
 		log.Println("Error parsing end time:", err)
 		return
 	}
-
-	err = createClass(a.DB, input.CourseID, startTime, endTime, input.Room)
+	log.Println("Course id in API: ", input.CourseID)
+	err = createClass(a.DB, input.CourseID, startTime, endTime, input.Room, input.Groups)
 	if err != nil {
 		http.Error(w, "Failed to create class", http.StatusInternalServerError)
 		log.Println("Error creating class:", err)

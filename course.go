@@ -46,6 +46,10 @@ func createCourse(db *sql.DB, name string, year int, startDate, endDate time.Tim
 
 	query := `INSERT INTO courses (Name, Year, StartDate, EndDate, TeacherID) VALUES (?, ?, ?, ?, ?)`
 	res, err := tx.Exec(query, name, year, startDate, endDate, teacherID)
+	log.Println("n : ", name)
+	log.Println("STime : ", startDate)
+	log.Println("EndTIme : ", endDate)
+	log.Println("Year: ", year)
 	if err != nil {
 		tx.Rollback()
 		log.Println("Error inserting course:", err)
