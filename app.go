@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -36,7 +37,7 @@ func (a *App) Initialize() {
 	a.DB.SetMaxIdleConns(0)
 
 	a.Router = mux.NewRouter()
-	a.Aws = "192.168.100.12"
+	a.Aws = "172.20.10.3"
 	err = a.generateKey()
 	if err != nil {
 		a.Store = sessions.NewCookieStore([]byte("Stan0dard0101Coo6kie0101Sto7reByAAS"))
@@ -59,7 +60,7 @@ func (a *App) Run(addr string) {
 }
 
 func (a *App) initializeRoutes() {
-	a.Router.Handle("/api/device/authorise", a.deviceAuthMiddleware(http.HandlerFunc(a.checkDevice))).Methods("GET")
+	a.Router.Handle("/api/device/authorize", a.deviceAuthMiddleware(http.HandlerFunc(a.checkDevice)))
 	a.Router.Handle("/api/device/attendance", a.deviceAuthMiddleware(http.HandlerFunc(a.putAttendance))).Methods("POST")
 
 	a.Router.HandleFunc("/api/web/login", a.loginHandler).Methods("POST")
@@ -117,7 +118,6 @@ func (a *App) initializeClient() {
 
 func (a *App) deviceAuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
 		device := Device{}
 		device.Mac = r.Header.Get("X-MAC-ADDRESS")
 		key := r.Header.Get("X-API-KEY")
@@ -206,17 +206,30 @@ func (a *App) logoutHandler(w http.ResponseWriter, r *http.Request) {
 	session.Save(r, w)
 }
 func (a *App) checkDevice(w http.ResponseWriter, r *http.Request) {
-	if r.RemoteAddr == a.Aws {
-		w.WriteHeader(200)
+	host, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+	if host == a.Aws {
+		w.WriteHeader(http.StatusOK)
 	} else {
 		w.WriteHeader(http.StatusServiceUnavailable)
+		return
 	}
 }
 
 func (a *App) putAttendance(w http.ResponseWriter, r *http.Request) {
-	if r.RemoteAddr == a.Aws {
+	host, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+	log.Println("TI BEBRA: " + host)
+	if host == a.Aws {
 		device, ok := r.Context().Value("device").(Device)
 		if !ok {
+			log.Println("Device not dound!")
 			http.Error(w, "Device information not found", http.StatusInternalServerError)
 			return
 		}
@@ -237,6 +250,7 @@ func (a *App) putAttendance(w http.ResponseWriter, r *http.Request) {
 		if err := json.NewDecoder(r.Body).Decode(&student); err != nil {
 			log.Fatalf("Failed to decode JSON response: %v", err)
 		}
+		log.Println(student)
 
 		var attendance = Attendance{ClassID: class.Id, Student: student}
 		err = attendance.update(a.DB)
@@ -245,7 +259,6 @@ func (a *App) putAttendance(w http.ResponseWriter, r *http.Request) {
 			log.Println("Error updating attendance status:", err)
 			return
 		}
-
 		w.WriteHeader(200)
 	}
 }
@@ -473,62 +486,61 @@ func (a *App) createCourse(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) createClass(w http.ResponseWriter, r *http.Request) {
-    var input struct {
-        CourseID  int    `json:"course_id"`
-        StartTime string `json:"start_time"`
-        EndTime   string `json:"end_time"`
-        Room      string `json:"room"`
-    }
+	var input struct {
+		CourseID  int    `json:"course_id"`
+		StartTime string `json:"start_time"`
+		EndTime   string `json:"end_time"`
+		Room      string `json:"room"`
+	}
 
-    if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-        http.Error(w, "Invalid input", http.StatusBadRequest)
-        log.Println("Error decoding input:", err)
-        return
-    }
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		http.Error(w, "Invalid input", http.StatusBadRequest)
+		log.Println("Error decoding input:", err)
+		return
+	}
 
-    startTime, err := time.Parse(time.RFC3339, input.StartTime)
-    if err != nil {
-        http.Error(w, "Invalid start time format", http.StatusBadRequest)
-        log.Println("Error parsing start time:", err)
-        return
-    }
-    endTime, err := time.Parse(time.RFC3339, input.EndTime)
-    if err != nil {
-        http.Error(w, "Invalid end time format", http.StatusBadRequest)
-        log.Println("Error parsing end time:", err)
-        return
-    }
+	startTime, err := time.Parse(time.RFC3339, input.StartTime)
+	if err != nil {
+		http.Error(w, "Invalid start time format", http.StatusBadRequest)
+		log.Println("Error parsing start time:", err)
+		return
+	}
+	endTime, err := time.Parse(time.RFC3339, input.EndTime)
+	if err != nil {
+		http.Error(w, "Invalid end time format", http.StatusBadRequest)
+		log.Println("Error parsing end time:", err)
+		return
+	}
 
-    err = createClass(a.DB, input.CourseID, startTime, endTime, input.Room)
-    if err != nil {
-        http.Error(w, "Failed to create class", http.StatusInternalServerError)
-        log.Println("Error creating class:", err)
-        return
-    }
-    w.WriteHeader(http.StatusOK)
+	err = createClass(a.DB, input.CourseID, startTime, endTime, input.Room)
+	if err != nil {
+		http.Error(w, "Failed to create class", http.StatusInternalServerError)
+		log.Println("Error creating class:", err)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 }
 
 func (a *App) endClassPrematurely(w http.ResponseWriter, r *http.Request) {
-    var input struct {
-        ClassID int `json:"class_id"`
-    }
+	var input struct {
+		ClassID int `json:"class_id"`
+	}
 
-    if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-        http.Error(w, "Invalid input", http.StatusBadRequest)
-        log.Println("Error decoding input:", err)
-        return
-    }
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		http.Error(w, "Invalid input", http.StatusBadRequest)
+		log.Println("Error decoding input:", err)
+		return
+	}
 
-    err := endClassPrematurely(a.DB, input.ClassID)
-    if err != nil {
-        http.Error(w, "Failed to end class prematurely", http.StatusInternalServerError)
-        log.Println("Error ending class prematurely:", err)
-        return
-    }
+	err := endClassPrematurely(a.DB, input.ClassID)
+	if err != nil {
+		http.Error(w, "Failed to end class prematurely", http.StatusInternalServerError)
+		log.Println("Error ending class prematurely:", err)
+		return
+	}
 
-    w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusOK)
 }
-
 
 func (a *App) registerTeacher(w http.ResponseWriter, r *http.Request) {
 	var teacher = Teacher{}
