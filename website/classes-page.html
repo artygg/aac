@@ -147,6 +147,10 @@
     .date p {
         width:90%;
     }
+
+    .hidden {
+        visibility: hidden;
+    }
 </style>
 <body>
 <header>
@@ -158,7 +162,7 @@
     <img class="logo" src="img/aas-logo.png" alt="logo">
 </header>
 <div class="main-part">
-        <div class="main-header">
+        <div class="main-header hidden">
             <h1>
                 Course name
             </h1>
@@ -192,67 +196,70 @@
 </div>
 
 <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const courseID = urlParams.get('courseID');
+    document.addEventListener("DOMContentLoaded", () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const courseID = urlParams.get('courseID');
 
-    const createClassLink = document.getElementById('create-class-link');
-    createClassLink.href = `/class/create?courseID=${courseID}`;
+        const createClassLink = document.getElementById('create-class-link');
+        createClassLink.href = `/class/create?courseID=${courseID}`;
 
-    const statisticsLink = document.getElementById('statistics-link');
-    statisticsLink.href = `/attendance/by_course?courseID=${courseID}`;
+        const statisticsLink = document.getElementById('statistics-link');
+        statisticsLink.href = `/attendance/by_course?courseID=${courseID}`;
 
-    fetch(`/api/web/courses`)
-        .then(res => res.json())
-        .then(data => {
-            const courses = data.courses;
+        fetch(`/api/web/courses`)
+            .then(res => res.json())
+            .then(data => {
+                const courses = data.courses;
 
-            courses.forEach(course => {
-                if (course.id == courseID) {
-                    console.log("Course: ",course.name)
-                    const mainHeaderElement = document.querySelector('.main-header');
-                    const h1Element = mainHeaderElement.querySelector('h1');
-                    h1Element.innerText = course.name;
-                }
+                courses.forEach(course => {
+                    if (course.id == courseID) {
+                        console.log("Course: ",course.name)
+                        const mainHeaderElement = document.querySelector('.main-header');
+                        const h1Element = mainHeaderElement.querySelector('h1');
+                        h1Element.innerText = course.name;
+                        mainHeaderElement.classList.remove('hidden');
+                    }
+                })
             })
-        })
-        .catch(error => console.error('Error fetching courses:', error));
+            .catch(error => console.error('Error fetching courses:', error));
 
 
 
-    fetch(`/api/web/classes?courseID=${courseID}`)
-        .then(response => response.json())
-        .then(data => {
-            console.log(data)
-            const classesContainer = document.querySelector('.classes');
-            data.forEach(classInstance => {
-                const classContainer = document.createElement('div');
-                classContainer.classList.add('class-container');
+        fetch(`/api/web/classes?courseID=${courseID}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log(data)
+                const classesContainer = document.querySelector('.classes');
+                data.forEach(classInstance => {
+                    const classContainer = document.createElement('div');
+                    classContainer.classList.add('class-container');
 
-                const classElement = document.createElement('div');
-                classElement.classList.add('class');
+                    const classElement = document.createElement('div');
+                    classElement.classList.add('class');
 
-                const colorDiv = document.createElement('div');
-                colorDiv.classList.add('color');
-                const linkToClass = document.createElement('div');
-                linkToClass.classList.add('link-to-the-class-info');
-                const link = document.createElement('a');
-                link.setAttribute('href', `/attendance/by_class?classID=${classInstance.id}`);
-                link.textContent = classInstance.id;
-                const startDate = document.createElement('div');
-                startDate.classList.add('date');
-                const startDateText = document.createElement('p');
-                startDateText.textContent = classInstance.starttime;
+                    const colorDiv = document.createElement('div');
+                    colorDiv.classList.add('color');
+                    const linkToClass = document.createElement('div');
+                    linkToClass.classList.add('link-to-the-class-info');
+                    const link = document.createElement('a');
+                    link.setAttribute('href', `/attendance/by_class?classID=${classInstance.id}`);
+                    link.textContent = classInstance.id;
+                    const startDate = document.createElement('div');
+                    startDate.classList.add('date');
+                    const startDateText = document.createElement('p');
+                    startDateText.textContent = classInstance.starttime;
 
-                startDate.appendChild(startDateText)
-                linkToClass.appendChild(link)
-                classElement.appendChild(colorDiv)
-                classElement.appendChild(linkToClass)
-                classElement.appendChild(startDate)
-                classContainer.appendChild(classElement);
-                classesContainer.appendChild(classContainer);
+                    startDate.appendChild(startDateText)
+                    linkToClass.appendChild(link)
+                    classElement.appendChild(colorDiv)
+                    classElement.appendChild(linkToClass)
+                    classElement.appendChild(startDate)
+                    classContainer.appendChild(classElement);
+                    classesContainer.appendChild(classContainer);
+                })
             })
-        })
-        .catch(error => console.error('Error fetching classes:', error));
+            .catch(error => console.error('Error fetching classes:', error));
+    });
 </script>
 
 </body>
