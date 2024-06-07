@@ -65,28 +65,6 @@ header .dots {
     margin: 1rem;
 }
 
-.search-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 5vh 11.5rem 5vh 5vh;
-}
-
-.search-bar p {
-    padding-left: 10vw ;
-    color: #00000096;
-}
-
-.search-bar-border {
-    border: lightgray 0.1rem solid;
-}
-
-.search-bar input {
-    border: none;
-    height: 5vh;
-    width: 20vw;
-}
-
 .classes {
 }
 
