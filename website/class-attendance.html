@@ -80,24 +80,6 @@
         font-weight: normal;
     }
 
-    tr:nth-child(1) td:nth-child(4) {
-        background-color: #D2F6A4
-    }
-
-    tr:nth-child(2) td:nth-child(4) {
-        background-color: #DDD7D7
-
-    }
-
-    tr:nth-child(3) td:nth-child(4) a{
-        text-decoration: none;
-        color: black;
-    }
-    tr:nth-child(4) td:nth-child(4) a{
-        text-decoration: none;
-        color: black;
-    }
-
     .sub-header {
         display: flex;
         justify-content: center;
@@ -159,6 +141,26 @@
         width: auto;
         height: 7vh;
     }
+
+    .red {
+        background-color: #DC7777;
+    }
+
+    .green {
+        background-color: #D2F6A4;
+    }
+
+    .white {
+        background-color: white;
+    }
+
+    .grey {
+        background-color: #DDD7D7
+    }
+
+    .invisible {
+        visibility: hidden;
+    }
 </style>
 <body>
 <header>
@@ -169,12 +171,11 @@
     <img class="logo" src="img/aas-logo.png" alt="logo">
 </header>
 <div class="main-part">
-    <div class="main-header">
+    <div class="main-header invisible">
         <h1>Course name</h1>
     </div>
     <div class="class-description">
         <div class="top-class-description">
-            <p>Class name</p>
             <p>Date</p>
         </div>
         <div class="bottom-class-description">
@@ -192,12 +193,7 @@
         </tr>
         </thead>
         <tbody>
-        <tr>
-            <td>123123</td>
-            <td>None</td>
-            <td>None</td>
-            <td>Retarded</td>
-        </tr>
+
         </tbody>
     </table>
     <div class="button-area">
@@ -244,8 +240,90 @@
         .then(res => res.json())
         .then(data => {
             console.log(data)
+            const tbody = document.querySelector('tbody');
+            data.forEach(entry => {
+                const tr = document.createElement('tr');
+
+                const studentIdCell = document.createElement('td');
+                studentIdCell.textContent = entry.student.id;
+                tr.appendChild(studentIdCell);
+
+                const firstNameCell = document.createElement('td');
+                firstNameCell.textContent = entry.student.first_name;
+                tr.appendChild(firstNameCell);
+
+                const lastNameCell = document.createElement('td');
+                lastNameCell.textContent = entry.student.last_name;
+                tr.appendChild(lastNameCell);
+
+
+                const presenceCell = document.createElement('td');
+                presenceCell.className = 'white';
+                switch (entry.status) {
+                    case '1':
+                        presenceCell.textContent = 'Present'
+                        presenceCell.className = 'green'
+                        break
+                    case '2':
+                        presenceCell.textContent = 'Absent'
+                        presenceCell.className = 'red'
+                        break
+                    case '3':
+                        presenceCell.textContent = 'Excused'
+                        presenceCell.className = 'grey'
+                        break
+                    default:
+                        presenceCell.textContent = 'Unmarked'
+                }
+                presenceCell.addEventListener('click', function() {
+                     changeStatus(entry);
+                });
+                tr.appendChild(presenceCell);
+
+                tbody.appendChild(tr);
+            })
         })
         .catch(error => console.error('Error fetching courses:', error));
+
+    function changeStatus(entry) {
+        var nextStatus
+        switch (entry.status) {
+            case "1":
+                nextStatus = "3"
+                break
+            case "3":
+                nextStatus = "2"
+                break
+            case "2":
+                nextStatus = "0"
+                break
+            default:
+                nextStatus = "1"
+        }
+
+        // Send HTTP POST request to update attendance status
+        fetch(`/api/web/attendance`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                class_id: entry.class_id,
+                student: entry.student,
+                status: entry.status,
+                time: "0000-00-00 00:00:00"
+            })
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to update attendance status');
+                }
+                return response.json();
+            })
+            .catch(error => {
+                console.error('Error updating attendance status:', error);
+            });
+    }
 </script>
 </body>
 </html>

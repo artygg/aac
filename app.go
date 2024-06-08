@@ -110,10 +110,6 @@ func (a *App) initializeClient() {
 		http.ServeFile(w, r, "./website/classes-page.html")
 	})))
 
-	a.Router.Handle("/attendance/edit", a.userAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./platform/updateAttendance.html")
-	})))
-
 	a.Router.Handle("/course/create", a.userAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./website/start_new_course.html")
 	})))
