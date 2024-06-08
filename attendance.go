@@ -55,6 +55,8 @@ func (attendance *Attendance) update(db *sql.DB) error {
 	}
 	defer stmt.Close()
 
+	log.Println("Status: ", attendance.Status, ", Time: ", time.Now(), ", Student ID: ", attendance.Student.Id, ", Class ID: ", attendance.ClassID)
+
 	res, err := stmt.Exec(attendance.Status, time.Now(), attendance.Student.Id, attendance.ClassID)
 	if err != nil {
 		log.Println("Error executing query:", err)
