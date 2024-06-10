@@ -95,7 +95,7 @@
                     const linkToClass = document.createElement('div');
                     linkToClass.classList.add('link-to-the-class-info');
                     const link = document.createElement('a');
-                    link.setAttribute('href', `/attendance/by_class?classID=${classInstance.id}`);
+                    link.setAttribute('href', `/attendance/by_class?classID=${classInstance.id}&courseID=${courseID}`);
                     link.textContent = classInstance.id;
                     const startDate = document.createElement('div');
                     startDate.classList.add('date');

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Timer</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+        .timer {
+            font-size: 3em;
+            background: #333;
+            color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+<div class="timer" id="timer">00:00:00</div>
+
+<script>
+    function startTimer() {
+        const timerElement = document.getElementById('timer');
+        let seconds = 0;
+
+        setInterval(() => {
+            seconds++;
+            const hours = String(Math.floor(seconds / 3600)).padStart(2, '0');
+            const minutes = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+            const secs = String(seconds % 60).padStart(2, '0');
+            timerElement.textContent = `${hours}:${minutes}:${secs}`;
+        }, 1000);
+    }
+
+    window.onload = startTimer;
+</script>
+</body>
+</html>
