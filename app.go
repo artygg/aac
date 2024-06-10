@@ -37,7 +37,7 @@ func (a *App) Initialize() {
 	a.DB.SetMaxIdleConns(0)
 
 	a.Router = mux.NewRouter()
-	a.Aws = "172.20.10.13"
+	a.Aws = "192.168.100.12"
 	err = a.generateKey()
 	if err != nil {
 		a.Store = sessions.NewCookieStore([]byte("Stan0dard0101Coo6kie0101Sto7reByAAS"))
