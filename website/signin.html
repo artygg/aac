@@ -2,119 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="css/signin.css" type="text/css">
+    <link rel="stylesheet" href="static/css/signin.css" type="text/css">
     <title>Sign In</title>
 </head>
 <style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: Arial, Helvetica, sans-serif;
-    }
-
-    .header {
-        display: flex;
-        justify-content: center;
-        padding: 2rem;
-    }
-
-    .header img{
-        display: block;
-        max-width: 7vw;
-        width: auto;
-    }
-
-    .container {
-        display: grid;
-        grid-template-columns: 38% 24% 38%;
-        grid-template-rows: 3fr 10fr 3fr;
-    }
-
-    .container-header {
-        grid-column: 2/3;
-        grid-row: 1/2;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .container-main {
-        grid-column: 2/3;
-        grid-row: 2/3;
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-        padding: 2rem;
-        border: #5076AD80 0.1rem solid;
-        border-radius: 1rem;
-        background-color: #00378705;
-    }
-
-    .password-container {
-        display: flex;
-        gap: 1rem;
-    }
-
-    .password-container label {
-        flex-grow: 1;
-    }
-
-    .password-container a {
-        text-decoration: none;
-    }
-
-    .test {
-        display: flex;
-        font-size: 16px;
-        justify-content: center;
-        align-items: center;
-        margin-top: 2rem;
-        border: #003787 0.1rem solid;
-        border-radius: 0.5rem;
-        background-color: #003787;
-        color: white;
-        padding: 0.3rem;
-    }
-
-    .container-footer {
-        grid-column: 2/3;
-        grid-row: 3/4;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 1rem;
-        border: #5076AD80 0.1rem solid;
-        border-radius: 0.5rem;
-        background-color: #00378705;
-        padding: 0.5rem;
-        margin-top: 2rem;
-    }
-
-    .container-footer a{
-        text-decoration: none;
-        color: #5076AD;
-    }
-
-    .footer {
-        display: flex;
-        justify-content: center;
-        padding: 2rem;
-        gap: 1rem;
-        position: absolute;
-        bottom: 0;
-        width: 100%;
-        font-size: 0.8rem;
-    }
-
-    .error {
-        color:#DC7777;
-    }
 </style>
 
 <body>
     <div class="header">
-        <img src="img/aas-logo.png" alt="logo">
+        <img src="static/img/aas-logo.png" alt="logo">
     </div>
 
     <div class="container">
