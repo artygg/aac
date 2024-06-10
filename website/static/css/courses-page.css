@@ -46,10 +46,12 @@ header .dots {
     font-size: 1.2rem;
     border: #0000003B 0.1rem solid;
 }
-.sub-header-element button{
+
+.sub-header-element button {
     color: grey;
 }
-.selected button{
+
+.selected button {
     color: black;
     font-size: 1.8rem;
 }
@@ -158,7 +160,6 @@ button {
     justify-content: center;
     padding: 2rem;
     gap: 1rem;
-    position: absolute;
     bottom: 0;
     width: 100%;
     color: #00000078;

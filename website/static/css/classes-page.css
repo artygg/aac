@@ -131,8 +131,15 @@ header .dots {
     justify-content: center;
     padding: 2rem;
     gap: 1rem;
-    position: absolute;
     bottom: 0;
     width: 100%;
     color: #00000078;
+}
+
+.date p {
+    width:90%;
+}
+
+.hidden {
+    visibility: hidden;
 }

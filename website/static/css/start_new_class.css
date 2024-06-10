@@ -57,7 +57,7 @@ header .dots {
     column-gap: 1rem;
 }
 
-#courseNameOutput, #groupInput, #date{
+#roomOutput, #groupInput, #roomSelector, #startDateOutput, #endDateOutput{
     height: 2rem;
     width: 20vw;
 }
@@ -98,4 +98,14 @@ button{
 .sub-header img{
     height: 5vh;
     width: 5vh;
+}
+
+#date {
+    display: flex;
+    gap: 1rem;
+}
+
+#time-choice {
+    display: flex;
+    gap: 1rem;
 }

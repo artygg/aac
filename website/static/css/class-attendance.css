@@ -72,24 +72,6 @@ thead tr th {
     font-weight: normal;
 }
 
-tr:nth-child(1) td:nth-child(4) {
-    background-color: #D2F6A4
-}
-
-tr:nth-child(2) td:nth-child(4) {
-    background-color: #DDD7D7
-
-}
-
-tr:nth-child(3) td:nth-child(4) a{
-    text-decoration: none;
-    color: black;
-}
-tr:nth-child(4) td:nth-child(4) a{
-    text-decoration: none;
-    color: black;
-}
-
 .sub-header {
     display: flex;
     justify-content: center;
@@ -150,4 +132,30 @@ tr:nth-child(4) td:nth-child(4) a{
 .sub-header img {
     width: auto;
     height: 7vh;
+}
+
+.red {
+    background-color: #DC7777;
+}
+
+.green {
+    background-color: #D2F6A4;
+}
+
+.white {
+    background-color: white;
+}
+
+.grey {
+    background-color: #DDD7D7
+}
+
+.invisible {
+    visibility: hidden;
+}
+
+select {
+    border: none;
+    padding: 0.25rem;
+    font-size: 1rem;
 }
