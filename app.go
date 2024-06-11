@@ -121,7 +121,7 @@ func (a *App) deviceAuthMiddleware(next http.Handler) http.Handler {
 		device.Mac = r.Header.Get("X-MAC-ADDRESS")
 		key := r.Header.Get("X-API-KEY")
 		log.Println(r.RemoteAddr)
-		log.Println(device)
+		log.Println(device, key)
 		if key == "" {
 			http.Error(w, "API key is missing", http.StatusUnauthorized)
 			return
