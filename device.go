@@ -20,8 +20,8 @@ func (device *Device) getDevice(db *sql.DB) error {
 }
 
 func (device *Device) getClass(db *sql.DB) (Class, error) {
-	qwery := fmt.Sprintf("SELECT * FROM classes WHERE room = '%v' AND NOW() BETWEEN startTime AND endTime LIMIT 1", device.Room)
+	qwery := fmt.Sprintf("SELECT `Id` FROM classes WHERE room = '%v' AND NOW() BETWEEN startTime AND endTime LIMIT 1", device.Room)
 	class := Class{}
-	err := db.QueryRow(qwery).Scan(&class)
+	err := db.QueryRow(qwery).Scan(&class.Id)
 	return class, err
 }
