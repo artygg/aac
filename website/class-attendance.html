@@ -11,14 +11,14 @@
 <body>
 <header>
     <div class="holder">
-        <img class="dots" src="static/img/dots.png" alt="dots">
+        <img class="dots" src="/static/img/dots.png" alt="dots">
         <a href="">&larr; Go back</a>
     </div>
-    <img class="logo" src="static/img/aas-logo.png" alt="logo">
+    <img class="logo" src="/static/img/aas-logo.png" alt="logo">
 </header>
 <div class="main-part">
-    <div class="main-header invisible">
-        <h1>Course name</h1>
+    <div class="main-header">
+        <h1 class="invisible">Course name</h1>
     </div>
     <div class="class-description">
         <div class="top-class-description invisible">
@@ -55,8 +55,9 @@
         const courseName = mainHeader.querySelector('h1');
         const dateContainer = document.querySelector('.top-class-description')
         const date = dateContainer.querySelector('p');
-
-
+        const bottomClassDescription = document.querySelector('.bottom-class-description');
+        const paragraphs = bottomClassDescription.querySelectorAll('p');
+        const timeElement = paragraphs[1]
 
         const endCheckingButton = document.getElementById('end_checking_prematurely');
 
@@ -91,6 +92,8 @@
                         email: ""
                     }, "2", urlClassID);
                 }
+
+
             }
 
             // Change button text to "Save results"
@@ -108,7 +111,7 @@
                 courses.forEach(course => {
                     if (course.id === parseInt(urlCourseID)) {
                         courseName.textContent = course.name
-                        mainHeader.classList.remove('invisible')
+                        courseName.classList.remove('invisible')
                     }
                 })
             })
@@ -119,9 +122,11 @@
             .then(data => {
                 data.forEach(entering => {
                     if (entering.id === parseInt(urlClassID)) {
-                        console.log(entering)
-                        date.textContent = entering.starttime
-                        dateContainer.classList.remove('invisible')
+                        console.log(entering);
+                        window.onload = updateTimer(entering.starttime);
+                        date.textContent = entering.starttime;
+                        dateContainer.classList.remove('invisible');
+                        paragraphs[1].classList.remove('invisible')
                     }
                 })
             })
@@ -253,24 +258,18 @@
         }
 
         // Timer function to update the time every second
-        function updateTimer() {
-            let seconds = 0;
-            const bottomClassDescription = document.querySelector('.bottom-class-description');
-            bottomClassDescription.classList.remove('invisible');
-            const paragraphs = bottomClassDescription.querySelectorAll('p');
-            const timeElement = paragraphs[1]
-            timeElement.classList.remove('invisible')
+        function updateTimer(startingDateTime) {
+            const startTime = new Date(startingDateTime);
             setInterval(() => {
-                seconds++;
-                const hours = String(Math.floor(seconds / 3600)).padStart(2, '0');
-                const minutes = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
-                const secs = String(seconds % 60).padStart(2, '0');
-                timeElement.textContent = `Time of the class - ${hours}:${minutes}:${secs}`;
+                const now = new Date();
+                const elapsed = new Date(now - startTime);
+                const hours = String(elapsed.getUTCHours()).padStart(2, '0');
+                const minutes = String(elapsed.getUTCMinutes()).padStart(2, '0');
+                const seconds = String(elapsed.getUTCSeconds()).padStart(2, '0');
+                timeElement.textContent = `Time of the class - ${hours}:${minutes}:${seconds}`;
             }, 1000);
         }
 
-        // Start the timer when the page is loaded
-        window.onload = updateTimer();
     });
 </script>
 </body>

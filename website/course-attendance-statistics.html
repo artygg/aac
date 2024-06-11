@@ -8,17 +8,17 @@
 <body>
 <header>
     <div class="holder">
-        <img class="dots" src="static/img/dots.png" alt="dots">
+        <img class="dots" src="/static/img/dots.png" alt="dots">
         <a href="">&larr; Go back</a>
     </div>
-    <img class="logo" src="static/img/aas-logo.png" alt="logo">
+    <img class="logo" src="/static/img/aas-logo.png" alt="logo">
 </header>
 <div class="main-part">
-    <div class="main-header">
+    <div class="main-header hidden">
         <h1>Course name</h1>
     </div>
     <div class="sub-header">
-        <div><img src="static/img/statistics.png"></div>
+        <div><img src="/static/img/statistics.png"></div>
         <div><h2>Statistics</h2></div>
     </div>
     <div class="search-bar">
@@ -53,6 +53,7 @@
                 if (course.id == courseID) {
                     console.log("Course: ", course.name);
                     const mainHeaderElement = document.querySelector('.main-header');
+                    mainHeaderElement.classList.remove('hidden')
                     const h1Element = mainHeaderElement.querySelector('h1');
                     h1Element.innerText = course.name;
                 }
