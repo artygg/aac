@@ -20,14 +20,14 @@ type Teacher struct {
 }
 
 func (teacher *Teacher) getCourses(db *sql.DB) error {
-	qwery := fmt.Sprintf("SELECT `id`, `Name`, `TeacherID` FROM `courses` WHERE `TeacherID`= '%v'", teacher.Id)
+	qwery := fmt.Sprintf("SELECT `id`, `Name`, `TeacherID`, `StartDate`, `EndDate` FROM `courses` WHERE `TeacherID`= '%v'", teacher.Id)
 	rows, err := db.Query(qwery)
 	if err != nil {
 		return err
 	}
 	for rows.Next() {
 		var course Course
-		err := rows.Scan(&course.ID, &course.Name, &course.TeacherID)
+		err := rows.Scan(&course.ID, &course.Name, &course.TeacherID, &course.StartDate, &course.EndDate)
 		if err != nil {
 			return err
 		}
