@@ -247,7 +247,7 @@ func (a *App) putAttendance(w http.ResponseWriter, r *http.Request) {
 		if err := json.NewDecoder(r.Body).Decode(&student); err != nil {
 			log.Fatalf("Failed to decode JSON response: %v", err)
 		}
-		var attendance = Attendance{ClassID: class.Id, Student: student}
+		var attendance = Attendance{ClassID: class.Id, Student: student, Status: 1}
 		err = attendance.update(a.DB)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
