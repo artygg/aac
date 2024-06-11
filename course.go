@@ -9,12 +9,12 @@ import (
 )
 
 type Course struct {
-	ID        int       `json:"id"`
-	Name      string    `json:"name"`
-	Year      int       `json:"year"`
-	StartDate time.Time `json:"start_date"`
-	EndDate   time.Time `json:"end_date"`
-	TeacherID int       `json:"teacher_id"`
+	ID        int    `json:"id"`
+	Name      string `json:"name"`
+	Year      int    `json:"year"`
+	StartDate string `json:"start_date"`
+	EndDate   string `json:"end_date"`
+	TeacherID int    `json:"teacher_id"`
 }
 
 func (course *Course) getCourse(db *sql.DB) error {
