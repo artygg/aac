@@ -117,11 +117,11 @@ func (a *App) initializeClient() {
 
 func (a *App) deviceAuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Println(r.RemoteAddr)
 		device := Device{}
 		device.Mac = r.Header.Get("X-MAC-ADDRESS")
 		key := r.Header.Get("X-API-KEY")
-
+		log.Println(r.RemoteAddr)
+		log.Println(device)
 		if key == "" {
 			http.Error(w, "API key is missing", http.StatusUnauthorized)
 			return
@@ -162,7 +162,6 @@ func (a *App) userAuthMiddleware(next http.Handler) http.Handler {
 func (a *App) loginHandler(w http.ResponseWriter, r *http.Request) {
 	teacher := Teacher{}
 	err := json.NewDecoder(r.Body).Decode(&teacher)
-	log.Println(teacher)
 	password := teacher.Password
 	if teacher.Email == "" || teacher.Password == "" {
 		http.Error(w, "Login and password are required", http.StatusBadRequest)
@@ -211,7 +210,6 @@ func (a *App) checkDevice(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Error:", err)
 		return
 	}
-	log.Println(host)
 	if host == a.Aws {
 		w.WriteHeader(http.StatusOK)
 	} else {
@@ -226,39 +224,37 @@ func (a *App) putAttendance(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Error:", err)
 		return
 	}
-	log.Println("TI BEBRA: " + host)
 	if host == a.Aws {
-		//device, ok := r.Context().Value("device").(Device)
-		//if !ok {
-		//	log.Println("Device not dound!")
-		//	http.Error(w, "Device information not found", http.StatusInternalServerError)
-		//	return
-		//}
-		//class, err := device.getClass(a.DB)
-		//if err != nil {
-		//	switch err {
-		//	case sql.ErrNoRows:
-		//		http.Error(w, "No Active Class for this room", http.StatusServiceUnavailable)
-		//	default:
-		//		log.Println(err)
-		//		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		//	}
-		//	return
-		//}
+		device, ok := r.Context().Value("device").(Device)
+		if !ok {
+			log.Println("Device not dound!")
+			http.Error(w, "Device information not found", http.StatusInternalServerError)
+			return
+		}
+		class, err := device.getClass(a.DB)
+		if err != nil {
+			switch err {
+			case sql.ErrNoRows:
+				log.Println("No active class for the current device")
+				http.Error(w, "No Active Class for this room", http.StatusServiceUnavailable)
+			default:
+				log.Println(err)
+				http.Error(w, "Internal server error", http.StatusInternalServerError)
+			}
+			return
+		}
 		var student Student
 		if err := json.NewDecoder(r.Body).Decode(&student); err != nil {
 			log.Fatalf("Failed to decode JSON response: %v", err)
 		}
-		log.Println(student)
-
-		//var attendance = Attendance{ClassID: class.Id, Student: student}
-		//err = attendance.update(a.DB)
-		//if err != nil {
-		//	http.Error(w, err.Error(), http.StatusInternalServerError)
-		//	log.Println("Error updating attendance status:", err)
-		//	return
-		//}
-		//w.WriteHeader(200)
+		var attendance = Attendance{ClassID: class.Id, Student: student}
+		err = attendance.update(a.DB)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			log.Println("Error updating attendance status:", err)
+			return
+		}
+		w.WriteHeader(200)
 	}
 }
 
@@ -296,13 +292,10 @@ func (a *App) getCoursesByTeacherID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("Retrieved courses: %+v\n", teacher.Courses)
-
 	response := map[string]interface{}{
 		"user_id": teacherID,
 		"courses": teacher.Courses,
 	}
-	log.Println(response)
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		http.Error(w, "Failed to encode courses", http.StatusInternalServerError)
@@ -334,8 +327,6 @@ func (a *App) getAllGroups(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("Retrieved courses: %+v\n", groupCluster.Groups)
-
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(groupCluster.Groups); err != nil {
 		http.Error(w, "Failed to encode courses", http.StatusInternalServerError)
@@ -356,8 +347,6 @@ func (a *App) getAttendencesByClassID(w http.ResponseWriter, r *http.Request) {
 		log.Println("Error retrieving attendances:", err)
 		return
 	}
-
-	log.Printf("Retrieved attendances: %+v\n", class.Attendances)
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(class.Attendances); err != nil {
