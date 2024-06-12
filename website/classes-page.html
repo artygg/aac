@@ -70,6 +70,7 @@
                         const mainHeaderElement = document.querySelector('.main-header');
                         const h1Element = mainHeaderElement.querySelector('h1');
                         h1Element.innerText = course.name;
+                        window.courseName = course.name
                         mainHeaderElement.classList.remove('hidden');
                     }
                 })
@@ -96,7 +97,7 @@
                     linkToClass.classList.add('link-to-the-class-info');
                     const link = document.createElement('a');
                     link.setAttribute('href', `/attendance/by_class?classID=${classInstance.id}&courseID=${courseID}`);
-                    link.textContent = classInstance.id;
+                    link.textContent = `${courseName} - ${classInstance.id} - ${classInstance.room}`;
                     const startDate = document.createElement('div');
                     startDate.classList.add('date');
                     const startDateText = document.createElement('p');

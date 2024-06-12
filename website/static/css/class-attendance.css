@@ -113,7 +113,7 @@ thead tr th {
 
 .test {
     display: flex;
-    font-size: 16px;
+    font-size: 1rem;
     justify-content: center;
     align-items: center;
     margin-top: 2rem;
@@ -158,4 +158,13 @@ select {
     border: none;
     padding: 0.25rem;
     font-size: 1rem;
+}
+
+#refresh {
+    border-radius: 0.5rem;
+    margin-top: 2rem;
+    margin-right: 4rem;
+    height: 2rem;
+    border: #003787 0.1rem solid;
+    border-radius: 0.5rem;
 }
