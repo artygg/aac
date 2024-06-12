@@ -166,6 +166,7 @@ func getStudentsInGroups(db *sql.DB, groups []string) ([]Student, error) {
 
 func endClassPrematurely(db *sql.DB, classID int) error {
 	query := `UPDATE classes SET EndTime = ? WHERE Id = ?`
+	log.Println("!!!End time: ", time.Now(), "!!!")
 	_, err := db.Exec(query, time.Now(), classID)
 	if err != nil {
 		log.Println("Error updating class end time:", err)
