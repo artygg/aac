@@ -3,8 +3,8 @@
 ## Components Needed
 1. Raspberry Pi Camera v2
 2. Raspberry Pi 4b
-3. Raspberry Pi TFT screen 7-inch touch display
-4. SSD card
+3. Raspberry Pi TFT Screen 7-inch Touch Display
+4. SSD Card
 
 ## Steps to Connect the Hardware Components
 
@@ -16,7 +16,7 @@
 
 ## Preparation Steps
 
-1. **Download the Operating System to SSD card**:
+1. **Download the Operating System to SSD Card**:
    - Download the appropriate operating system for your task (e.g., Raspberry Pi OS Legacy Lite, Debian Bullseye with desktop environment).
 
 ### Tips
@@ -119,6 +119,95 @@ The `watchdog` library monitors folder changes to detect when a picture is taken
      # :(){ :|: & };:
      ```
    - **Warning**: This command will reboot your device.
+
+## Running the Client on Raspberry Pi
+
+After setting up the client properly, you may encounter additional issues when running it on the Raspberry Pi:
+
+1. **Issue with Sending Images to the Server**:
+   - Sometimes, the image is sent, but the neural network receives an empty file. It is unclear whether this issue is related to hardware, the server, or the neural network.
+
+2. **Camera Error When Resending Images**:
+   - Attempting to resend an image without resetting the client may result in a 200 error, indicating a problem with the Raspberry Pi camera.
+
+## Automating Script Execution at Boot
+
+To ensure that the Raspberry Pi runs the client script at startup, follow these steps:
+
+### Using `rc.local`
+
+There are several methods to run a command, script, or program at boot. This is useful if you want the Raspberry Pi to start in headless mode (without a connected monitor) and automatically run a program. One recommended method is to use the `rc.local` file.
+
+### Editing `rc.local`
+
+1. On your Raspberry Pi, edit the file `/etc/rc.local` as root:
+   ```bash
+   sudo nano /etc/rc.local
+   ```
+2. Add your commands below the comment, but leave the line `exit 0` at the end. For example, to run your script `myscript.py`, add the line:
+   ```bash
+   python3 /home/pi/myscript.py
+   ```
+   Or to run a custom bash script, add the line:
+   ```bash
+   /home/pi/schedule.sh
+   ```
+   Ensure you reference absolute filenames rather than relative paths.
+
+3. Make sure that the `rc.local` file is executable:
+   ```bash
+   sudo chmod +x /etc/rc.local
+   ```
+
+4. Reboot your Raspberry Pi to test it:
+   ```bash
+   sudo reboot
+   ```
+
+### Making Boot Non-blocking
+
+If you add a script or command to your `/etc/rc.local` file, it will be included in the boot sequence. If your code gets stuck, the boot sequence cannot proceed. To avoid this, test the code multiple times before adding it to the boot sequence.
+
+Alternatively, if your script runs continuously, you should fork the process by adding an ampersand (`&`) to the end of the command:
+```bash
+python3 /home/pi/myscript.py &
+```
+The ampersand allows the command to run in a separate process, enabling the boot process to continue with the script running.
+
+### Waiting for Network
+
+`rc.local` may run before the Raspberry Pi has connected to the network. To address this, add a delay:
+```bash
+sleep 5
+```
+
+### Writing to Logfile
+
+To write to a logfile simultaneously, run the command as follows:
+```bash
+bash -c '/usr/bin/python3 /home/pi/myscript.py > /home/pi/mylog.log 2>&1' &
+```
+
+### Using `.bashrc`
+
+Instead of running a script at boot, you can run a script each time a terminal window opens, including on boot and with a new SSH connection. Edit `.bashrc` to do this:
+```bash
+sudo nano /home/pi/.bashrc
+```
+Add your commands at the end of the file. For example, to print a statement and run a Python script:
+```bash
+echo Running sample script
+sudo python /home/pi/sample.py
+```
+The program can be aborted with `Ctrl-C` while it is running.
+
+### Persistent Issues
+
+Despite following the above steps, some issues may persist. For example:
+- Images being sent as empty files to the neural network.
+- Persistent 200 errors from the camera when resending images.
+
+These issues could be due to hardware or software inconsistencies. Further debugging and testing may be required to pinpoint the exact cause.
 
 ## References
 
