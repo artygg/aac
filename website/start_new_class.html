@@ -79,8 +79,13 @@
 <script>
     const urlParams = new URLSearchParams(window.location.search);
     const urlCourseID = urlParams.get('courseID');
+    const urlCourseName = urlParams.get('name');
     const goBack = document.getElementById("go-back")
     goBack.href = `/classes?courseID=${urlCourseID}`
+
+    const subHeader = document.querySelector('.sub-header')
+    const header1 = subHeader.querySelector('h1')
+    header1.textContent = urlCourseName
 
     fetch('/api/web/rooms')
         .then(response => response.json())
@@ -159,6 +164,13 @@
             room: room,
             groups: groups
         };
+
+        if (!room || !groups || !endTime || !startTime) {
+            validationErrorMessage.textContent = "Please fill out all fields";
+            validationErrorMessage.classList.remove('hidden');
+            console.log("Please fill out all fields")
+            return;
+        }
 
         if (new Date(startTime) >= new Date(endTime)) {
             validationErrorMessage.textContent = "The start time should be before the end time";

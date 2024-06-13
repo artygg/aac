@@ -136,6 +136,14 @@
         validationErrorMessage.style.display = 'none';
 
         const emailDomain = "@nhlstenden.com";
+
+        if (!firstName|| !lastName || !email || email === emailDomain) {
+            validationErrorMessage.textContent = "Please fill out all fields";
+            validationErrorMessage.classList.remove('hidden');
+            console.log("Please fill out all fields")
+            return;
+        }
+
         if (!email.endsWith(emailDomain)) {
             validationErrorMessage.style.display = 'block';
             validationErrorMessage.innerText = 'Invalid email address format';

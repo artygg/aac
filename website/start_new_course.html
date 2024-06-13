@@ -136,6 +136,13 @@
             groups: groups
         };
 
+        if (!courseName|| !year || !groups || !endDate || !startDate) {
+            validationErrorMessage.textContent = "Please fill out all fields";
+            validationErrorMessage.classList.remove('hidden');
+            console.log("Please fill out all fields")
+            return;
+        }
+
         if (new Date(startDate) >= new Date(endDate)) {
             validationErrorMessage.textContent = "The start date should be before the end date";
             validationErrorMessage.classList.remove('hidden');

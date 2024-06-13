@@ -54,7 +54,7 @@
         const courseID = urlParams.get('courseID');
 
         const createClassLink = document.getElementById('create-class-link');
-        createClassLink.href = `/class/create?courseID=${courseID}`;
+        createClassLink.href = `/class/create?courseID=${courseID}&name`;
 
         const statisticsLink = document.getElementById('statistics-link');
         statisticsLink.href = `/attendance/by_course?courseID=${courseID}`;
@@ -67,6 +67,7 @@
                 courses.forEach(course => {
                     if (course.id == courseID) {
                         console.log("Course: ",course.name)
+                        createClassLink.href = `/class/create?courseID=${courseID}&name=${course.name}`
                         const mainHeaderElement = document.querySelector('.main-header');
                         const h1Element = mainHeaderElement.querySelector('h1');
                         h1Element.innerText = course.name;
