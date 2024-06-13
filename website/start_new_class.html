@@ -11,13 +11,13 @@
 <header>
     <div class="holder">
         <img class="dots" src="/static/img/dots.png" alt="dots">
-        <a href="">&larr; Go back</a>
+        <a id="go-back" href="">&larr; Go back</a>
     </div>
 
     <img class="logo" src="/static/img/aas-logo.png" alt="logo">
 </header>
 <div class="sub-header">
-    <h1>Professional skills 1A</h1>
+    <h1></h1>
     <img src="/static/img/plus.png" alt="plus">
     <h2>Start new class</h2>
 </div>
@@ -79,6 +79,8 @@
 <script>
     const urlParams = new URLSearchParams(window.location.search);
     const urlCourseID = urlParams.get('courseID');
+    const goBack = document.getElementById("go-back")
+    goBack.href = `/classes?courseID=${urlCourseID}`
 
     fetch('/api/web/rooms')
         .then(response => response.json())

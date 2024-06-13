@@ -12,7 +12,7 @@
 <header>
     <div class="holder">
         <img class="dots" src="/static/img/dots.png" alt="dots">
-        <a href="">&larr; Go back</a>
+        <a id="go-back" href="">&larr; Go back</a>
     </div>
     <img class="logo" src="/static/img/aas-logo.png" alt="logo">
 </header>
@@ -62,6 +62,8 @@
         const paragraphs = bottomClassDescription.querySelectorAll('p');
         const classStatus = paragraphs[0]
         const timeElement = paragraphs[1]
+        const goBack = document.getElementById("go-back")
+        goBack.href = `/classes?courseID=${urlCourseID}`
 
         const endCheckingButton = document.getElementById('end_checking_prematurely');
 
