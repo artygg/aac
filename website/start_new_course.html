@@ -11,11 +11,11 @@
 <body>
 <header>
     <div class="holder">
-        <img class="dots" src="static/img/dots.png" alt="dots">
+        <img class="dots" src="/static/img/dots.png" alt="dots">
         <a href="">&larr; Go back</a>
     </div>
 
-    <img class="logo" src="static/img/aas-logo.png" alt="logo">
+    <img class="logo" src="/static/img/aas-logo.png" alt="logo">
 </header>
 <div class="main-part">
     <h1>Add new course</h1>
@@ -56,6 +56,7 @@
         </div>
         <p>Course date</p>
         <p><input type="text" id="date" readonly required></p>
+        <div id="validation-error-message" class="hidden">!</div>
         <input type="submit" value="Add the course" class="submit">
     </form>
 </div>
@@ -125,6 +126,7 @@
         const startDate = document.getElementById("startDate").value;
         const endDate = document.getElementById("endDate").value;
         const groups = document.getElementById("groupOutput").value.trim().split(" ");
+        const validationErrorMessage = document.getElementById('validation-error-message');
 
         const courseData = {
             name: courseName,
@@ -133,6 +135,13 @@
             end_date: endDate,
             groups: groups
         };
+
+        if (new Date(startDate) >= new Date(endDate)) {
+            validationErrorMessage.textContent = "The start date should be before the end date";
+            validationErrorMessage.classList.remove('hidden');
+            console.log("The start date should be before the end date")
+            return;
+        }
 
         console.log('Submitting course data:', courseData);
 

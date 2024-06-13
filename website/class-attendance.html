@@ -125,7 +125,7 @@
                             })
                             .catch(error => console.error('Error fetching courses:', error));
 
-                        endCheckingButton.addEventListener('click', function() {
+                        function endCheckingPrematurely() {
                             const input = {
                                 class_id: parseInt(urlClassID)
                             };
@@ -185,6 +185,18 @@
                             endCheckingButton.onclick = function() {
                                 window.location.href = '';
                             };
+                        }
+
+                        const ifClassEnded = setInterval(() => {
+                            const now = new Date()
+                            if (now > classEndTime) {
+                                endCheckingPrematurely()
+                                console.log("Class has ended")
+                                clearInterval(ifClassEnded);
+                            }
+                        }, 200);
+                        endCheckingButton.addEventListener('click', function() {
+                            endCheckingPrematurely();
                         });
                     }
                 })

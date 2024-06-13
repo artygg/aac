@@ -104,3 +104,15 @@ header .dots {
     width: 100%;
     color: #00000078;
 }
+
+#validation-error-message {
+    color: #DC7777;
+    margin-top: 1rem;
+    position: relative;
+    left: 0;
+    width: 100%;
+}
+
+.hidden {
+    visibility: hidden;
+}

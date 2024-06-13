@@ -135,6 +135,13 @@
 
         validationErrorMessage.style.display = 'none';
 
+        const emailDomain = "@nhlstenden.com";
+        if (!email.endsWith(emailDomain)) {
+            validationErrorMessage.style.display = 'block';
+            validationErrorMessage.innerText = 'Invalid email address format';
+            return;
+        }
+
         if (password !== validatePassword) {
             validationErrorMessage.style.display = 'block';
             validationErrorMessage.innerText = 'Passwords do not match';
