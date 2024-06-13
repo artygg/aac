@@ -63,6 +63,7 @@
         <p><input type="text" id="endTimeOutput" readonly required></p>
         </div>
         </div>
+        <div id="validation-error-message" class="hidden">!</div>
         <button type="submit">Add the class</button>
     </form>
 
@@ -147,6 +148,7 @@
         const startTime = document.getElementById("startTimeOutput").value;
         const endTime = document.getElementById("endTimeOutput").value;
         const groups = document.getElementById("groupOutput").value.trim().split(" ");
+        const validationErrorMessage = document.getElementById('validation-error-message');
 
         const classData = {
             course_id: courseID,
@@ -155,6 +157,13 @@
             room: room,
             groups: groups
         };
+
+        if (new Date(startTime) >= new Date(endTime)) {
+            validationErrorMessage.textContent = "The start time should be before the end time";
+            validationErrorMessage.classList.remove('hidden');
+            console.log("The start time should be before the end time")
+            return;
+        }
 
         console.log('Submitting course data:', classData);
 
