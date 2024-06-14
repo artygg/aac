@@ -475,10 +475,11 @@ func (a *App) createCourse(w http.ResponseWriter, r *http.Request) {
 
 func (a *App) createClass(w http.ResponseWriter, r *http.Request) {
 	var input struct {
-		CourseID  int    `json:"course_id"`
-		StartTime string `json:"start_time"`
-		EndTime   string `json:"end_time"`
-		Room      string `json:"room"`
+		CourseID  int      `json:"course_id"`
+		StartTime string   `json:"start_time"`
+		EndTime   string   `json:"end_time"`
+		Room      string   `json:"room"`
+		Groups    []string `json:"groups"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
@@ -487,20 +488,20 @@ func (a *App) createClass(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	startTime, err := time.Parse(time.RFC3339, input.StartTime)
+	startTime, err := time.Parse("2006-01-02 15:04", input.StartTime)
 	if err != nil {
 		http.Error(w, "Invalid start time format", http.StatusBadRequest)
 		log.Println("Error parsing start time:", err)
 		return
 	}
-	endTime, err := time.Parse(time.RFC3339, input.EndTime)
+	endTime, err := time.Parse("2006-01-02 15:04", input.EndTime)
 	if err != nil {
 		http.Error(w, "Invalid end time format", http.StatusBadRequest)
 		log.Println("Error parsing end time:", err)
 		return
 	}
 
-	err = createClass(a.DB, input.CourseID, startTime, endTime, input.Room)
+	err = createClass(a.DB, input.CourseID, startTime, endTime, input.Room, input.Groups)
 	if err != nil {
 		http.Error(w, "Failed to create class", http.StatusInternalServerError)
 		log.Println("Error creating class:", err)
@@ -554,4 +555,22 @@ func (a *App) registerTeacher(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(200)
+}
+
+func (a *App) getRooms(w http.ResponseWriter, r *http.Request) {
+	groups, err := getRooms(a.DB)
+
+	if err != nil {
+		http.Error(w, "Failed to get courses", http.StatusInternalServerError)
+		log.Println("Error retrieving courses:", err)
+		return
+	}
+
+	log.Printf("Retrieved courses: %+v\n", groups)
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(groups); err != nil {
+		http.Error(w, "Failed to encode courses", http.StatusInternalServerError)
+		log.Println("Error encoding courses to JSON:", err)
+	}
 }
