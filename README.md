@@ -141,8 +141,8 @@ services:
       - ./aws:/app
 
     environment:
-      - AWS_ACCESS_KEY_ID=AKIAZQ3DPCW77YLOYX6E
-      - AWS_SECRET_ACCESS_KEY=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
+      - AWS_ACCESS_KEY_ID=
+      - AWS_SECRET_ACCESS_KEY=
       - AWS_DEFAULT_REGION=us-east-2
     networks:
       aas_network:
