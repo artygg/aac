@@ -42,6 +42,10 @@ func (teacher *Teacher) get(db *sql.DB) error {
 }
 
 func (teacher *Teacher) register(db *sql.DB) error {
+	hashedPassword, err := hashPassword(teacher.Password)
+	if err != nil {
+		log.Println("Error, while hashing password", err)
+	}
 	query := `
         INSERT INTO teachers (email, firstName, lastName, password, registrationDate)
         VALUES (?, ?, ?, ?, ?)`
@@ -52,7 +56,7 @@ func (teacher *Teacher) register(db *sql.DB) error {
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(teacher.Email, teacher.FirstName, teacher.LastName, teacher.Password, time.Now())
+	_, err = stmt.Exec(teacher.Email, teacher.FirstName, teacher.LastName, hashedPassword, time.Now())
 	if err != nil {
 		log.Println("Error executing query:", err)
 		return err
