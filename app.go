@@ -28,7 +28,7 @@ type App struct {
 func (a *App) Initialize() {
 	var err error
 
-	a.DB, err = sql.Open("mysql", "u420565238_aas:^5qJ2ZVRgEO3@tcp(109.106.246.151)/u420565238_aas")
+	a.DB, err = sql.Open("mysql", "")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -137,7 +137,6 @@ func (a *App) deviceAuthMiddleware(next http.Handler) http.Handler {
 			}
 			return
 		}
-
 		if device.Key != key {
 			http.Error(w, "Invalid API key", http.StatusUnauthorized)
 			return
