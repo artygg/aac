@@ -86,43 +86,43 @@ func (a *App) initializeClient() {
 	a.Router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./platform/static"))))
 
 	a.Router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, ".platform/index.html")
+		http.ServeFile(w, r, "./platform/index.html")
 	})
 
 	a.Router.Handle("/courses", a.userAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, ".platform/courses-page.html")
+		http.ServeFile(w, r, "./platform/courses-page.html")
 	})))
 
 	a.Router.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, ".platform/signin.html")
+		http.ServeFile(w, r, "./platform/signin.html")
 	})
 
 	a.Router.HandleFunc("/registration", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, ".platform/register.html")
+		http.ServeFile(w, r, "./platform/register.html")
 	})
 
 	a.Router.Handle("/protected", a.userAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, ".platform/protected.html")
+		http.ServeFile(w, r, "./platform/protected.html")
 	})))
 
 	a.Router.Handle("/classes", a.userAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, ".platform/classes-page.html")
+		http.ServeFile(w, r, "./platform/classes-page.html")
 	})))
 
 	a.Router.Handle("/course/create", a.userAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "platform/start-new-course.html")
+		http.ServeFile(w, r, "./platform/start-new-course.html")
 	})))
 
 	a.Router.Handle("/class/create", a.userAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, ".platform/start-new-class.html")
+		http.ServeFile(w, r, "./platform/start-new-class.html")
 	})))
 
 	a.Router.Handle("/attendance/by_course", a.userAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, ".platform/course-attendance-statistics.html")
+		http.ServeFile(w, r, "./platform/course-attendance-statistics.html")
 	})))
 
 	a.Router.Handle("/attendance/by_class", a.userAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, ".platform/class-attendance.html")
+		http.ServeFile(w, r, "./platform/class-attendance.html")
 	})))
 
 	a.Router.HandleFunc("/logout", a.logoutHandler)
