@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Course Attendance</title>
+    <link rel="stylesheet" href="/static/css/course-attendance-statistics.css" type="text/css">
+</head>
+<body>
+<header>
+    <div class="holder">
+        <img class="dots" src="/static/img/dots.png" alt="dots">
+        <a id="go-back" href="">&larr; Go back</a>
+    </div>
+    <img class="logo" src="/static/img/aas-logo.png" alt="logo">
+</header>
+<div class="main-part">
+    <div class="main-header hidden">
+        <h1>Course name</h1>
+    </div>
+    <div class="sub-header">
+        <div><img src="/static/img/statistics.png"></div>
+        <div><h2>Statistics</h2></div>
+    </div>
+    <div class="search-bar">
+        <div class="search-bar-border">
+            <input type="text" id="student-search" placeholder="Search a student">
+        </div>
+    </div>
+    <table>
+        <thead>
+        <tr>
+            <th>Student ID</th>
+            <th>First name</th>
+            <th>Last name</th>
+            <th>Attendance Percentage</th>
+        </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+
+<script src="/static/js/course-attendance-statistics.js">
+</script>
+</body>
+</html>
