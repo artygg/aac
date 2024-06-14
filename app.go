@@ -69,12 +69,13 @@ func (a *App) initializeRoutes() {
 	a.Router.Handle("/api/web/courses", a.userAuthMiddleware(http.HandlerFunc(a.getCoursesByTeacherID))).Methods("GET")
 	a.Router.Handle("/api/web/groups", a.userAuthMiddleware(http.HandlerFunc(a.getAllGroups))).Methods("GET")
 	a.Router.Handle("/api/web/groups/by_course", a.userAuthMiddleware(http.HandlerFunc(a.getGroupsByCourseID))).Methods("GET")
+	a.Router.Handle("/api/web/rooms", a.userAuthMiddleware(http.HandlerFunc(a.getRooms))).Methods("GET")
 
 	a.Router.Handle("/api/web/attendance/by_class", a.userAuthMiddleware(http.HandlerFunc(a.getAttendencesByClassID))).Methods("GET")
 	a.Router.Handle("/api/web/attendance/by_course", a.userAuthMiddleware(http.HandlerFunc(a.getAttendanceByCourseID))).Methods("GET")
 
 	a.Router.Handle("/api/web/attendance", a.userAuthMiddleware(http.HandlerFunc(a.updateAttendanceStatus))).Methods("POST")
-
+	a.Router.Handle("/api/web/class/end", a.userAuthMiddleware(http.HandlerFunc(a.endClassPrematurely))).Methods("POST")
 	a.Router.Handle("/api/web/course", a.userAuthMiddleware(http.HandlerFunc(a.createCourse))).Methods("POST")
 	a.Router.Handle("/api/web/teacher", http.HandlerFunc(a.registerTeacher)).Methods("POST")
 	a.initializeClient()
@@ -82,34 +83,46 @@ func (a *App) initializeRoutes() {
 
 func (a *App) initializeClient() {
 
-	a.Router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./platform/static"))))
+	a.Router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./website/static"))))
 
 	a.Router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./platform/index.html")
+		http.ServeFile(w, r, "./index.html")
 	})
 
 	a.Router.Handle("/courses", a.userAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./platform/courses.html")
+		http.ServeFile(w, r, "./courses-page.html")
 	})))
 
 	a.Router.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./platform/login.html")
+		http.ServeFile(w, r, "./signin.html")
+	})
+
+	a.Router.HandleFunc("/registration", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./register.html")
 	})
 
 	a.Router.Handle("/protected", a.userAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./platform/protected.html")
+		http.ServeFile(w, r, "./protected.html")
 	})))
 
 	a.Router.Handle("/classes", a.userAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./platform/classes.html")
-	})))
-
-	a.Router.Handle("/attendance/edit", a.userAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./platform/updateAttendance.html")
+		http.ServeFile(w, r, "./classes-page.html")
 	})))
 
 	a.Router.Handle("/course/create", a.userAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./platform/newcourse.html")
+		http.ServeFile(w, r, "./start-new-course.html")
+	})))
+
+	a.Router.Handle("/class/create", a.userAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./start-new-class.html")
+	})))
+
+	a.Router.Handle("/attendance/by_course", a.userAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./course-attendance-statistics.html")
+	})))
+
+	a.Router.Handle("/attendance/by_class", a.userAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./class-attendance.html")
 	})))
 
 	a.Router.HandleFunc("/logout", a.logoutHandler)
