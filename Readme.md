@@ -120,7 +120,7 @@ The `watchdog` library monitors folder changes to detect when a picture is taken
      ```
    - **Warning**: This command will reboot your device.
 
-## Running the Client on Raspberry Pi
+### Running the Client on Raspberry Pi
 
 After setting up the client properly, you may encounter additional issues when running it on the Raspberry Pi:
 
@@ -128,8 +128,33 @@ After setting up the client properly, you may encounter additional issues when r
    - Sometimes, the image is sent, but the neural network receives an empty file. It is unclear whether this issue is related to hardware, the server, or the neural network.
 
 2. **Camera Error When Resending Images**:
-   - Attempting to resend an image without resetting the client may result in a 200 error, indicating a problem with the Raspberry Pi camera.
+   - Attempting to resend an image without resetting the client may result in the following error:
+     ```plaintext
+     picamera.exc.PiCameraError: Camera is not enabled. Try running 'sudo raspi-config' and ensure that the camera has been enabled.
+     Traceback (most recent call last):
+       File "/usr/lib/python3/dist-packages/picamera/camera.py", line 456, in __init_camera
+         self._camera = mo.MMALCamera()
+       File "/usr/lib/python3/dist-packages/picamera/mmalobj.py", line 2279, in __init__
+         super(MMALCamera, self).__init__()
+       File "/usr/lib/python3/dist-packages/picamera/mmalobj.py", line 631, in __init__
+         mmal_check(
+       File "/usr/lib/python3/dist-packages/picamera/exc.py", line 184, in mmal_check
 
+       "/usr/lib/python3/dist-packages/flask/app.py", line 1950, in full_dispatch_request
+         rv = self.dispatch_request()
+       File "/usr/lib/python3/dist-packages/flask/app.py", line 1936, in dispatch_request
+         return self.view_functions[rule.endpoint](**req.view_args)
+       File "/home/groupf/Documents/rpiWebServer/client.py", line 61, in take_photo
+         camera = PiCamera()
+       File "/usr/lib/python3/dist-packages/picamera/camera.py", line 431, in __init__
+         self.__init_camera(camera_num, stereo_mode, stereo_decimate)
+       File "/usr/lib/python3/dist-packages/picamera/camera.py", line 459, in __init_camera
+         raise PiCameraError("Camera is not enabled. Try running 'sudo raspi-config' and ensure that the camera has been enabled.")
+     picamera.exc.PiCameraError: Camera is not enabled. Try running 'sudo raspi-config' and ensure that the camera has been enabled.
+     ```
+
+   - This error occurs when the camera is used to capture a second photo without resetting the client. The camera can only be used to capture a new photo after resetting the client.
+   
 ## Automating Script Execution at Boot
 
 To ensure that the Raspberry Pi runs the client script at startup, follow these steps:
@@ -205,7 +230,7 @@ The program can be aborted with `Ctrl-C` while it is running.
 
 Despite following the above steps, some issues may persist. For example:
 - Images being sent as empty files to the neural network.
-- Persistent 200 errors from the camera when resending images.
+- Persistent error from the camera when resending images.
 
 These issues could be due to hardware or software inconsistencies. Further debugging and testing may be required to pinpoint the exact cause.
 
