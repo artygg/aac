@@ -1,0 +1,170 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.main-part {
+    margin: 5rem;
+}
+
+.main-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+    font-size: 2rem;
+}
+
+.main-header h1 {
+    font-weight: normal;
+    color: #003787
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 2rem
+}
+
+header .logo {
+    max-width: 7vw;
+    width: auto;
+    display: block;
+}
+
+header .dots {
+    width: 3vw;
+    height: 3vw;
+}
+
+.holder {
+    display: flex;
+}
+
+.holder a {
+    display: flex;
+    align-items: end;
+    padding-left: 3rem;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px auto;
+    font-size: 18px;
+    text-align: center;
+    border: 1px solid #003787;
+}
+
+th, td {
+    padding: 8px 10px;
+    border: 2px solid #003787;
+}
+
+thead tr {
+    color: #003787;
+}
+
+thead tr th {
+    font-weight: normal;
+}
+
+.sub-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    color: #003787;
+}
+
+.class-description {
+}
+
+.class-description * {
+    padding: 10px;
+    font-size: 25px;
+}
+
+.top-class-description {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+}
+
+.top-class-description p:nth-child(1) {
+    font-size: 30px;
+}
+
+.bottom-class-description {
+    display: flex;
+}
+
+.bottom-class-description * {
+    flex-grow: 1;
+    color: rgba(0, 0, 0, 0.59);
+}
+
+.bottom-class-description p:nth-child(2) {
+    text-align: right;
+}
+
+.test {
+    display: flex;
+    font-size: 1rem;
+    justify-content: center;
+    align-items: center;
+    margin-top: 2rem;
+    border: #003787 0.1rem solid;
+    border-radius: 0.5rem;
+    background-color: #003787;
+    color: white;
+    padding: 0.3rem;
+}
+
+.button-area {
+    display: flex;
+    justify-content: right;
+}
+
+.sub-header img {
+    width: auto;
+    height: 7vh;
+}
+
+.red {
+    background-color: #DC7777;
+}
+
+.green {
+    background-color: #D2F6A4;
+}
+
+.white {
+    background-color: white;
+}
+
+.grey {
+    background-color: #DDD7D7
+}
+
+.invisible {
+    visibility: hidden;
+}
+
+select {
+    border: none;
+    padding: 0.25rem;
+    font-size: 1rem;
+}
+
+#refresh {
+    border-radius: 0.5rem;
+    margin-top: 2rem;
+    margin-right: 4rem;
+    height: 2rem;
+    border: #003787 0.1rem solid;
+    border-radius: 0.5rem;
+}

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/static/css/register.css" type="text/css">
+    <title>Sign up</title>
+</head>
+<body>
+    <div class="header">
+        <div class="header-text">
+            <h2>Join AAS</h2>
+            <p>Already have an account? <a href="/login">Sign in</a></p>
+
+        </div>
+        <div class="header-image">
+            <img src="/static/img/aas-logo.png" alt="logo">
+        </div>
+    </div>
+
+    <div class="header-tab">
+        <div class="header-tab-item">
+            <img src="static/img/profile_pic.png" alt="pic">
+            <div class="header-tab-text">
+                <h3>Step 1:</h3>
+                <p>Set up your account</p>
+            </div>
+        </div>
+        <div class="header-tab-item grey-out">
+            <img src="static/img/email.png" alt="pic">
+            <div class="header-tab-text">
+                <h3>Step 2:</h3>
+                <p>Validate your email</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <form id="main-form">
+            <h2>Create your personal account</h2>
+            <div class="main-form-item">
+                <label for="first_name">First name</label>
+                <input type="text" name="first_name" id="first_name">
+                <p>This will be your first name</p>
+            </div>
+            <div class="main-form-item">
+                <label for="last_name">Last name</label>
+                <input type="text" name="last_name" id="last_name">
+                <p>This will be your last name</p>
+            </div>
+            <div class="main-form-item">
+                <label for="email">Email address</label>
+                <input type="email" name="email" id="email">
+                <p>We will occasionally send updates about your account to this inbox.</p>
+            </div>
+            <div class="main-form-item">
+                <label for="password">Password</label>
+                <input type="password" name="password" id="password">
+                <p>Make sure it is at least 8 characters including a number, a lowercase letter and an uppercase letter.</p>
+            </div>
+            <div class="main-form-item relative-container">
+                <label for="validate_password">Validate your password</label>
+                <input type="password" name="validate_password" id="validate_password">
+                <p>Make sure it is at least 8 characters including a number, a lowercase letter and an uppercase letter.</p>
+                <div id="validation-error-message">!</div>
+            </div>
+            <div class="main-form-create">
+                <p>By clicking “Create an account” below, you are agreeing to the Terms of Service and the Privacy Policy.</p>
+                <div class="button">
+                    <input type="submit" value="Create an account" name="create_account" id="create_account" class="submit-button">
+                </div>
+            </div>
+        </form>
+        <div class="why-aas">
+            <div class="upper-box">
+                <p>Why Automated Attendance System?</p>
+            </div>
+            <div class="bottom-box">
+                <div class="why-points">
+                <div class="line-item">
+                    <img src="static/img/FullLogo_Transparent_NoBuffer%20(13).png" alt="icon">
+                    <span>Efficiency</span>
+                </div>
+                <div class="line-item">
+                    <img src="static/img/FullLogo_Transparent_NoBuffer%20(13).png" alt="icon">
+                    <span>Accuracy</span>
+                </div>
+                <div class="line-item">
+                    <img src="static/img/FullLogo_Transparent_NoBuffer%20(13).png" alt="icon">
+                    <span>Real-time Updates</span>
+                </div>
+                <div class="line-item">
+                    <img src="static/img/FullLogo_Transparent_NoBuffer%20(13).png" alt="icon">
+                    <span>Time-saving</span>
+                </div>
+                <div class="line-item">
+                    <img src="static/img/FullLogo_Transparent_NoBuffer%20(13).png" alt="icon">
+                    <span>Security</span>
+                </div>
+                <div class="line-item">
+                    <img src="static/img/FullLogo_Transparent_NoBuffer%20(13).png" alt="icon">
+                    <span>Convenience</span>
+                </div>
+                <div class="line-item">
+                    <img src="static/img/FullLogo_Transparent_NoBuffer%20(13).png" alt="icon">
+                    <span>Modern Solution</span>
+                </div>
+                <div class="line-item">
+                    <img src="static/img/FullLogo_Transparent_NoBuffer%20(13).png" alt="icon">
+                    <span>Adaptability</span>
+                </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Terms</p>
+        <p>Privacy</p>
+        <p>Docs</p>
+        <p>Contact AAS support</p>
+        <p>Manage cookies</p>
+    </div>
+
+<script src="/static/js/register.js">
+</script>
+
+</body>
+</html>

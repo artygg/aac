@@ -1,0 +1,75 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/static/css/start_new_course.css" type="text/css">
+    <title>New course</title>
+</head>
+
+<body>
+<header>
+    <div class="holder">
+        <img class="dots" src="/static/img/dots.png" alt="dots">
+        <a href="/courses">&larr; Go back</a>
+    </div>
+
+    <img class="logo" src="/static/img/aas-logo.png" alt="logo">
+</header>
+<div class="main-part">
+    <h1>Add new course</h1>
+    <form id="form">
+        <p>Name of the course</p>
+        <input type="text" class="input-big" id="courseNameInput" required oninput="typeNameOfTheCourse()">
+        <p>Year of the course</p>
+        <input type="text" class="input-big" id="yearNameInput" required oninput="typeNameOfTheYear()">
+        <div class="date-choice-container">
+            <div class="date-choice">
+                <p>Start date</p>
+                <p><input type="date" id="startDate" required oninput="dateFunction() "></p>
+            </div>
+            <div class="date-choice">
+                <p>End date</p>
+                <p><input type="date" id="endDate" required oninput="dateFunction()"></p>
+            </div>
+        </div>
+
+        <p>Choose groups</p>
+        <select id="groupInput" onchange="chooseGroup()">
+            <option>Choose group</option>
+        </select>
+        <h2>Check your new course</h2>
+        <div class="checking-container">
+            <div class="checking">
+                <p>Course name</p>
+                <p><input type="text" id="courseNameOutput" required readonly></p>
+            </div>
+            <div class="checking">
+                <p>Year of the course</p>
+                <p><input type="text" id="yearNameOutput" required readonly></p>
+            </div>
+            <div class="checking">
+                <p>Course groups</p>
+                <p><input type="text" id="groupOutput" required readonly></p>
+            </div>
+        </div>
+        <p>Course date</p>
+        <p><input type="text" id="date" readonly required></p>
+        <div id="validation-error-message" class="hidden">!</div>
+        <input type="submit" value="Add the course" class="submit">
+    </form>
+</div>
+<div id="footer">
+    <p>Terms</p>
+    <p>Privacy</p>
+    <p>Docs</p>
+    <p>Contact AAS support</p>
+    <p>Manage cookies</p>
+</div>
+
+<script src="/static/js/start-new-course.js">
+</script>
+
+</body>
+</html>

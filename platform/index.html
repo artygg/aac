@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="static/css/signin.css" type="text/css">
+    <title>Sign In</title>
+</head>
+<body>
+<div class="header">
+    <img src="static/img/aas-logo.png" alt="logo">
+</div>
+
+<div class="container">
+    <div class="container-header">
+        <h2>Sing in to AAS</h2>
+    </div>
+    <form class="container-main" id="loginForm">
+        <label for="email">Email address</label>
+        <input type="email" name="email" id="email">
+        <div class="password-container">
+            <label for="password">Password</label>
+            <a href="">Forgot password?</a>
+        </div>
+        <input type="password" name="password" id="password">
+        <input type="submit" value="Sign in" name="sign_in" id="sign_in" class="test">
+        <div id="message" class="error"></div>
+    </form>
+    <div class="container-footer">
+        <p>New to AAS?</p>
+        <a href="/registration">Create an account</a>
+    </div>
+</div>
+
+<div class="footer">
+    <p>Terms</p>
+    <p>Privacy</p>
+    <p>Docs</p>
+    <p>Contact AAS support</p>
+    <p>Manage cookies</p>
+</div>
+
+<script src="/static/js/index.js">
+</script>
+</body>
+</html>
