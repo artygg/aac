@@ -9,7 +9,7 @@ import (
 
 type Attendance struct {
 	ClassID int     `json:"class_id"`
-	Status  int     `json:"status"`
+	Status  string  `json:"status"`
 	Student Student `json:"student"`
 	Time    string  `json:"time"`
 }
