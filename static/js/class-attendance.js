@@ -97,13 +97,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
                                 // Change text to "Absent" and background color to red
 
-
                                 presenceCell.className = 'red';
                                 presenceCell.textContent = 'Absent'
                                 select.value = "2"; // Absent
                                 select.className = 'red';
-                                presenceCell.className = 'red';
-                                presenceCell.textContent = 'Absent'
 
                                 // Update status on server
                                 updateStatus({
