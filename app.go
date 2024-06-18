@@ -76,6 +76,7 @@ func (a *App) initializeRoutes() {
 
 	a.Router.Handle("/api/web/attendance", a.userAuthMiddleware(http.HandlerFunc(a.updateAttendanceStatus))).Methods("POST")
 	a.Router.Handle("/api/web/class/end", a.userAuthMiddleware(http.HandlerFunc(a.endClassPrematurely))).Methods("POST")
+	a.Router.Handle("/api/web/class", a.userAuthMiddleware(http.HandlerFunc(a.createClass))).Methods("POST")
 	a.Router.Handle("/api/web/course", a.userAuthMiddleware(http.HandlerFunc(a.createCourse))).Methods("POST")
 	a.Router.Handle("/api/web/teacher", http.HandlerFunc(a.registerTeacher)).Methods("POST")
 	a.initializeClient()
