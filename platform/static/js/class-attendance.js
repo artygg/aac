@@ -99,8 +99,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
                                 presenceCell.className = 'red';
                                 presenceCell.textContent = 'Absent'
-                                select.value = "2"; // Absent
-                                select.className = 'red';
+
+
 
                                 // Update status on server
                                 updateStatus({
@@ -178,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!response.ok) {
                     throw new Error('Failed to update attendance status');
                 } else {
-                    console.log('Status updated successfully');
+                    console.log(`Status updated successfully to ${newStatus}`);
                 }
             })
             .catch(error => {
