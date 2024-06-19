@@ -136,7 +136,7 @@ func getStudentsInGroups(db *sql.DB, groups []string) ([]Student, error) {
 	var students []Student
 	log.Println("Before student appending")
 	// Construct a query to retrieve students belonging to the specified groups
-	query := fmt.Sprintf("SELECT s.ID, s.FirstName, s.LastName, s.Email FROM students s INNER JOIN `groups assign` gs ON s.ID = gs.StudentID INNER JOIN groups g ON gs.GroupID = g.ID WHERE g.ID IN ('%s')", strings.Join(groups, "', '"))
+	query := fmt.Sprintf("SELECT s.ID, s.FirstName, s.LastName, s.Email FROM students s INNER JOIN `groups assign` ga ON s.ID = ga.StudentID INNER JOIN `groups` g ON ga.GroupID = g.ID WHERE g.ID IN ('%s')", strings.Join(groups, "', '"))
 
 	rows, err := db.Query(query)
 	if err != nil {
