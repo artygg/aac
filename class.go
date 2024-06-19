@@ -116,7 +116,7 @@ func createClass(db *sql.DB, courseID int, startTime time.Time, endTime time.Tim
 	// Insert attendance records for each student and the newly created class
 	for _, student := range students {
 		query := "INSERT INTO attendances (ClassID, StudentID, Time, Status) VALUES (?, ?, ?, ?)"
-		_, err := tx.Exec(query, classID, student.Id, " ", 0)
+		_, err := tx.Exec(query, classID, student.Id, time.Now(), 0)
 		if err != nil {
 			tx.Rollback()
 			log.Println("Error inserting attendance record:", err)
